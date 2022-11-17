@@ -36,7 +36,6 @@ import { ref, nextTick } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 
-const IMG_URL = 'http://qn.xianx.top/image/home_banner.webp'
 const loginRef = ref<FormInstance>()
 const formModel = ref({
   userName: '',
