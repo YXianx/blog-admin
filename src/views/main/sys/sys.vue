@@ -3,7 +3,7 @@
     <div class="cards">
       <el-row :gutter="25">
         <el-col :span="6">
-          <el-card style="background: linear-gradient(to right, #5466F2, #B672F7)">
+          <el-card shadow style="background: linear-gradient(to right, #5466F2, #B672F7)">
             <div class="card-info">
               <div class="header">
                 <div class="mask">
@@ -15,6 +15,16 @@
                 <div class="num">
                   3750
                   <span class="unit">次</span>
+                </div>
+              </div>
+              <div class="data-change">
+                <div class="yesterday-add">
+                  <span>昨日访问量: 28</span>
+                  <el-icon style="color: #7CD5EF"><CaretTop /></el-icon>
+                </div>
+                <div class="percent-add">
+                  <span>增长: 6%</span>
+                  <el-icon style="color: #CA3032"><CaretTop /></el-icon>
                 </div>
               </div>
             </div>
@@ -35,6 +45,12 @@
                   <span class="unit">位</span>
                 </div>
               </div>
+              <div class="data-change">
+                <div class="yesterday-add">
+                  <span>本周新增用户: 14</span>
+                  <el-icon style="color: #7CD5EF"><CaretTop /></el-icon>
+                </div>
+              </div>
             </div>
           </el-card>
         </el-col>
@@ -53,6 +69,12 @@
                   <span class="unit">篇</span>
                 </div>
               </div>
+              <div class="data-change">
+                <div class="yesterday-add">
+                  <span>本月发布文章: 14</span>
+                  <el-icon style="color: #7CD5EF"><CaretTop /></el-icon>
+                </div>
+              </div>
             </div>
           </el-card>
         </el-col>
@@ -69,6 +91,16 @@
                 <div class="num">
                   140
                   <span class="unit">条</span>
+                </div>
+              </div>
+              <div class="data-change">
+                <div class="yesterday-add">
+                  <span>新增留言: 28</span>
+                  <el-icon style="color: #7CD5EF"><CaretTop /></el-icon>
+                </div>
+                <div class="percent-add">
+                  <span>待审核: 8</span>
+                  <el-icon style="color: #CA3032"><CaretTop /></el-icon>
                 </div>
               </div>
             </div>
@@ -1163,6 +1195,20 @@ window.sessionStorage.setItem('myInfo', JSON.stringify({
           letter-spacing: 0.05em;
           .unit {
             font-size: 10px;
+          }
+        }
+      }
+      .data-change {
+        display: flex;
+        justify-content: space-between;
+        .yesterday-add, .percent-add {
+          display: flex;
+          align-items: center;
+          color: #fff;
+          font-size: 14px;
+          i {
+            font-size: 20px;
+            margin: 0 6px;
           }
         }
       }
