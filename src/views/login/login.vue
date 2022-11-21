@@ -32,14 +32,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+// import
+import { ref } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
-import type { FormInstance, FormRules } from 'element-plus'
+import router from '@/router/index'
 
+import { yxRequest } from '@/service';
+import showMsg from '@/utils/message/message'
+
+import type { FormInstance, FormRules } from 'element-plus'
+import type { IResult, Iaccount, IRouteFile } from './types'
+
+// code
 const loginRef = ref<FormInstance>()
-const formModel = ref({
-  userName: '',
-  password: ''
+const formModel = ref<Iaccount>({
+  userName: 'test',
+  password: '123'
 })
 const rules = ref<FormRules>({
   userName: [
@@ -53,16 +61,62 @@ const rules = ref<FormRules>({
 
 const submitClick = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  console.log(formEl);
-
   await formEl.validate((valid, failds) => {
     if (valid) {
-      console.log('success')
+      accountLogin(formModel.value)
     } else {
-      console.log('faild')
+      showMsg('warning', '请填写完整账号密码')
     }
   })
 }
+
+// 登录逻辑
+const accountLogin = async (account: Iaccount) => {
+  // 1、账号登录
+  const loginResult = await yxRequest.post<IResult>({
+    url: '/login',
+    data: {
+      username: account.userName,
+      password: account.password
+    }
+  })
+  if (loginResult.code === 2001 && loginResult.data === '登录成功') {
+    showMsg('success', '管理员登录成功')
+  } else { return }
+
+  // 2获取用户权限菜单
+  const menuResult = await yxRequest.get<IResult>({
+    url: '/admin/menus/treeList'
+  })
+  if (menuResult.code === 2001 && menuResult.message === '操作成功') {
+    console.log(menuResult.data)
+  } else {
+    return
+  }
+  registerRoutes()
+
+  // 3、跳转页面
+  // router.push('/main/sys')
+}
+
+// 动态渲染路由
+const registerRoutes = async () => {
+  const routers: IRouteFile[] = []
+  const allRoutes: IRouteFile[] = []
+
+  // 1、加载全部路由表
+  // webpack方式: const files = require.context('../../router/main', true, /\.ts$/)
+  // vite方式: import.meta.globEager 注意不能使用.glob，只有globEager导入的才是文件模块
+  const files: any = import.meta.globEager('../../router/main/**/*.ts')
+  Object.keys(files).forEach((key) => {
+    const route: any = files[key].default
+    allRoutes.push(route)
+  })
+  console.log(allRoutes);
+
+  // 2、请求用户权限路由表后比对路由
+}
+
 </script>
 
 <style scoped lang="less">

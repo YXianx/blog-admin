@@ -3,7 +3,7 @@
     <div class="cards">
       <el-row :gutter="25">
         <el-col :span="6">
-          <el-card shadow style="background: linear-gradient(to right, #5466F2, #B672F7)">
+          <el-card style="background: linear-gradient(to right, #5466F2, #B672F7)">
             <div class="card-info">
               <div class="header">
                 <div class="mask">

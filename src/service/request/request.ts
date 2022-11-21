@@ -2,6 +2,8 @@ import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 import type { YXRequestConfig, YXRequestInterceptor } from './type'
 
+import showMsg from '@/utils/message/message'
+import { ElMessage } from 'element-plus'
 
 class YXRequest {
   instance: AxiosInstance
@@ -35,6 +37,7 @@ class YXRequest {
         return res.data
       },
       (err) => {
+        showMsg('error', '请求失败，请联系网站管理员')
         return err
       }
     )
