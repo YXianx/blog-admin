@@ -39,9 +39,11 @@ import router from '@/router/index'
 
 import { yxRequest } from '@/service';
 import showMsg from '@/utils/message/message'
+import { userStore } from '@/store/user'
+import { mapMenuToRoutes } from '@/utils/global/map-menus'
 
 import type { FormInstance, FormRules } from 'element-plus'
-import type { IResult, Iaccount, IRouteFile } from './types'
+import type { IResult, IMenuResult, Iaccount } from './types'
 
 // code
 const loginRef = ref<FormInstance>()
@@ -84,39 +86,34 @@ const accountLogin = async (account: Iaccount) => {
     showMsg('success', '管理员登录成功')
   } else { return }
 
-  // 2获取用户权限菜单
-  const menuResult = await yxRequest.get<IResult>({
-    url: '/admin/menus/treeList'
+  // 2、获取用户权限菜单
+  const menuResult = await yxRequest.get<IMenuResult>({
+    url: '/admin/menus/user'
   })
   if (menuResult.code === 2001 && menuResult.message === '操作成功') {
-    console.log(menuResult.data)
+    const userMenu = menuResult.data
+    // 2-1、存入pinia
+    const user = userStore()
+    user.userMenus = userMenu
+    // 2-2、存入localstorage
+    window.localStorage.setItem('userMenus', JSON.stringify(userMenu))
   } else {
     return
   }
-  registerRoutes()
 
-  // 3、跳转页面
-  // router.push('/main/sys')
+  // 3、比对用户权限菜单
+  // TODO:bug: 路由对比结果为空，无法渲染
+  const routes = mapMenuToRoutes(menuResult.data)
+  // 4、动态渲染路由
+  if (Array.isArray(routes)) {
+    for (let route of routes) {
+      console.log('rou!!!: ',route)
+    }
+  }
+
+  // 5、跳转页面
+  router.push('/main/sys')
 }
-
-// 动态渲染路由
-const registerRoutes = async () => {
-  const routers: IRouteFile[] = []
-  const allRoutes: IRouteFile[] = []
-
-  // 1、加载全部路由表
-  // webpack方式: const files = require.context('../../router/main', true, /\.ts$/)
-  // vite方式: import.meta.globEager 注意不能使用.glob，只有globEager导入的才是文件模块
-  const files: any = import.meta.globEager('../../router/main/**/*.ts')
-  Object.keys(files).forEach((key) => {
-    const route: any = files[key].default
-    allRoutes.push(route)
-  })
-  console.log(allRoutes);
-
-  // 2、请求用户权限路由表后比对路由
-}
-
 </script>
 
 <style scoped lang="less">

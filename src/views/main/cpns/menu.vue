@@ -10,35 +10,43 @@
     <div class="header-icon">
       <img src="/vite.svg" alt="" srcset="">
     </div>
-    <el-sub-menu index="1">
-      <template #title>
-        <el-icon><Document/></el-icon>
-        <span>文章管理</span>
+    <template v-for="(menu, index) in user.userMenus" :key="menu.name">
+      <template v-if="!menu.children.length">
+        <el-menu-item :index="index + 1 + ''">
+          <el-icon>
+            <component :is="menu.icon"></component>
+          </el-icon>
+          {{ menu.name }}
+        </el-menu-item>
       </template>
-      <el-menu-item index="1-1">item1</el-menu-item>
-      <el-menu-item index="1-2">item2</el-menu-item>
-    </el-sub-menu>
-    <el-sub-menu index="2">
-      <template #title>
-        <el-icon><Paperclip/></el-icon>
-        <span>消息管理</span>
+      <template v-else>
+        <el-sub-menu :index="(index + 1) + ''">
+          <template #title>
+            <el-icon>
+              <component :is="menu.icon"></component>
+            </el-icon>
+            <span>{{ menu.name }}</span>
+          </template>
+          <template  v-if="menu.children" v-for="(children, cIndex) in menu.children">
+            <router-link :to="children.path" custom>
+              <el-menu-item :index="(index + 1) + '-' + (cIndex + 1)">
+                <template #title>
+                  <el-icon>
+                    <component :is="children.icon"></component>
+                  </el-icon>
+                  <span>{{ children.name }}</span>
+                </template>
+              </el-menu-item>
+            </router-link>
+          </template>
+        </el-sub-menu>
       </template>
-      <el-menu-item index="2-1">item1</el-menu-item>
-      <el-menu-item index="2-2">item2</el-menu-item>
-    </el-sub-menu>
-    <el-sub-menu index="3">
-      <template #title>
-        <el-icon><CreditCard/></el-icon>
-        <span>权限管理</span>
-      </template>
-      <el-menu-item index="3-1">item1</el-menu-item>
-      <el-menu-item index="3-2">item2</el-menu-item>
-    </el-sub-menu>
+    </template>
   </el-menu>
 </template>
 
 <script setup lang="ts">
-import { Document, Paperclip, CreditCard } from '@element-plus/icons-vue'
+import { userStore } from '@/store/user'
 
 const props = defineProps({
   isCollapse: {
@@ -46,12 +54,13 @@ const props = defineProps({
     default: false
   }
 })
+
+const user = userStore()
 </script>
 
 <style scoped lang="less">
 // reset
 .el-menu-item {
-  background-color: #102132;
   &:hover {
     background-color: #2A5FB6;
   }

@@ -21,12 +21,17 @@ import { ref } from 'vue'
 import Menu from './cpns/menu.vue'
 import Header from './cpns/header.vue'
 import Container from './cpns/container.vue'
+import { userStore } from '@/store/user'
 
 const isCollapse = ref(false)
 
 const handleCollapse = (result: boolean) => {
   isCollapse.value = result
 }
+
+// 重新加载用户缓存到pinia
+const user = userStore()
+user.setupUserInfo()
 </script>
 
 <style scoped lang="less">
