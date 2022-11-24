@@ -1,7 +1,8 @@
-import type { IUserMenu, IRouteFile } from '@/views/login/types'
-export const mapMenuToRoutes = async (userMenus: IUserMenu[]) => {
-  const routes: IRouteFile[] = []
-  const allRoutes: IRouteFile[] = []
+import type { RouteRecordRaw } from 'vue-router'
+import type { IUserMenu } from '@/views/login/types'
+export const mapMenuToRoutes = (userMenus: any[]): RouteRecordRaw[] => {
+  const routes: RouteRecordRaw[] = []
+  const allRoutes: RouteRecordRaw[] = []
 
   // 1、加载全部路由表
   // webpack方式: const files = require.context('../../router/main', true, /\.ts$/)
@@ -11,11 +12,13 @@ export const mapMenuToRoutes = async (userMenus: IUserMenu[]) => {
     const route: any = files[key].default
     allRoutes.push(route)
   })
+  // console.log(allRoutes)
+
 
   // 2、请求用户权限路由表后比对路由
   const _recurseGetRoute = (menus: IUserMenu[]) => {
     for (const menu of menus) {
-      if (!menu.children) {
+      if (!menu.children.length) {
         const route: any = allRoutes.find((item) => menu.path === item.path)
         if (route) {
           routes.push(route)
@@ -27,6 +30,5 @@ export const mapMenuToRoutes = async (userMenus: IUserMenu[]) => {
   }
 
   _recurseGetRoute(userMenus)
-  console.log('map-routes: ', routes)
   return routes
 }

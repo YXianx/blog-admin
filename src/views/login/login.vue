@@ -72,6 +72,7 @@ const submitClick = async (formEl: FormInstance | undefined) => {
   })
 }
 
+// TODO:刷新路由，路由全丢失not-found
 // 登录逻辑
 const accountLogin = async (account: Iaccount) => {
   // 1、账号登录
@@ -94,6 +95,7 @@ const accountLogin = async (account: Iaccount) => {
     const userMenu = menuResult.data
     // 2-1、存入pinia
     const user = userStore()
+    // TODO:pinia state不能添加类型注解导致报错
     user.userMenus = userMenu
     // 2-2、存入localstorage
     window.localStorage.setItem('userMenus', JSON.stringify(userMenu))
@@ -102,12 +104,12 @@ const accountLogin = async (account: Iaccount) => {
   }
 
   // 3、比对用户权限菜单
-  // TODO:bug: 路由对比结果为空，无法渲染
   const routes = mapMenuToRoutes(menuResult.data)
+
   // 4、动态渲染路由
   if (Array.isArray(routes)) {
-    for (let route of routes) {
-      console.log('rou!!!: ',route)
+    for (const route of routes) {
+      router.addRoute('main', route)
     }
   }
 

@@ -21,16 +21,6 @@ const routes: RouteRecordRaw[] = [
         name: 'sys',
         path: '/main/sys',
         component: () => import('@/views/main/sys/sys.vue')
-      },
-      {
-        name: 'articles',
-        path: '/main/articles',
-        component: () => import('@/views/main/article/articles/articles.vue')
-      },
-      {
-        name: 'article-list',
-        path: '/main/article-list',
-        component: () => import('@/views/main/article/article-list/article-list.vue')
       }
     ]
   }

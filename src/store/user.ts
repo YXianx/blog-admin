@@ -1,41 +1,28 @@
 import { defineStore } from 'pinia'
+import router from '@/router/index'
+import { mapMenuToRoutes } from '@/utils/global/map-menus'
 
+// type
+import type { IUserMenu } from '@/views/login/types'
+interface IUserState {
+  userMenus: IUserMenu[]
+}
+// type end
+
+// user store
 export const userStore = defineStore('user', {
-  state: () => {
+  state: (): IUserState => {
     return {
-      userMenus: [
-        {
-          children: [
-            {
-              children: [
-                {}
-              ],
-              component: "",
-              createTime: "",
-              hidden: true,
-              icon: "",
-              name: "",
-              orderNum: 0,
-              path: ""
-            }
-          ],
-          component: "",
-          createTime: "",
-          hidden: true,
-          icon: "",
-          name: "",
-          orderNum: 0,
-          path: ""
-        }
-      ]
+      userMenus: []
     }
   },
   actions: {
-    setupUserInfo() {
+    setupUserLogin() {
       const userMenus = JSON.parse(window.localStorage.getItem('userMenus')!)
       if (userMenus) {
         this.userMenus = userMenus
       }
-    }
+    },
   }
 })
+// user store end

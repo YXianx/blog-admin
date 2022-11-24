@@ -12,12 +12,16 @@
     </div>
     <template v-for="(menu, index) in user.userMenus" :key="menu.name">
       <template v-if="!menu.children.length">
-        <el-menu-item :index="index + 1 + ''">
-          <el-icon>
-            <component :is="menu.icon"></component>
-          </el-icon>
-          {{ menu.name }}
-        </el-menu-item>
+        <router-link :to="menu.path" custom v-slot="props">
+          <el-menu-item :index="index + 1 + ''" @click="props.navigate">
+            <el-icon>
+              <component :is="menu.icon"></component>
+            </el-icon>
+            <template #title>
+              {{ menu.name }}
+            </template>
+          </el-menu-item>
+        </router-link>
       </template>
       <template v-else>
         <el-sub-menu :index="(index + 1) + ''">
@@ -28,8 +32,8 @@
             <span>{{ menu.name }}</span>
           </template>
           <template  v-if="menu.children" v-for="(children, cIndex) in menu.children">
-            <router-link :to="children.path" custom>
-              <el-menu-item :index="(index + 1) + '-' + (cIndex + 1)">
+            <router-link :to="children.path" custom  v-slot="props">
+              <el-menu-item :index="(index + 1) + '-' + (cIndex + 1)" @click="props.navigate">
                 <template #title>
                   <el-icon>
                     <component :is="children.icon"></component>

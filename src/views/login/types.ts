@@ -30,14 +30,14 @@ interface IRouteFile {
 
 // 用户权限菜单接口
 interface IUserMenu {
-  children?: IUserMenu[]
+  children: IUserMenu[]
   component?: string,
   createTime?: string,
   hidden?: boolean,
   icon?: string,
   name?: string,
   orderNum?: number,
-  path?: string
+  path: string
 }
 
 export type {

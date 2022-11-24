@@ -31,7 +31,7 @@ const handleCollapse = (result: boolean) => {
 
 // 重新加载用户缓存到pinia
 const user = userStore()
-user.setupUserInfo()
+user.setupUserLogin()
 </script>
 
 <style scoped lang="less">
