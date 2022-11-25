@@ -35,15 +35,12 @@
 // import
 import { ref } from 'vue'
 import { User, Lock } from '@element-plus/icons-vue'
-import router from '@/router/index'
 
-import { yxRequest } from '@/service';
 import showMsg from '@/utils/message/message'
 import { userStore } from '@/store/user'
-import { mapMenuToRoutes } from '@/utils/global/map-menus'
 
 import type { FormInstance, FormRules } from 'element-plus'
-import type { IResult, IMenuResult, Iaccount } from './types'
+import type { Iaccount } from './types'
 
 // code
 const loginRef = ref<FormInstance>()
@@ -72,49 +69,10 @@ const submitClick = async (formEl: FormInstance | undefined) => {
   })
 }
 
-// TODO:刷新路由，路由全丢失not-found
 // 登录逻辑
 const accountLogin = async (account: Iaccount) => {
-  // 1、账号登录
-  const loginResult = await yxRequest.post<IResult>({
-    url: '/login',
-    data: {
-      username: account.userName,
-      password: account.password
-    }
-  })
-  if (loginResult.code === 2001 && loginResult.data === '登录成功') {
-    showMsg('success', '管理员登录成功')
-  } else { return }
-
-  // 2、获取用户权限菜单
-  const menuResult = await yxRequest.get<IMenuResult>({
-    url: '/admin/menus/user'
-  })
-  if (menuResult.code === 2001 && menuResult.message === '操作成功') {
-    const userMenu = menuResult.data
-    // 2-1、存入pinia
-    const user = userStore()
-    // TODO:pinia state不能添加类型注解导致报错
-    user.userMenus = userMenu
-    // 2-2、存入localstorage
-    window.localStorage.setItem('userMenus', JSON.stringify(userMenu))
-  } else {
-    return
-  }
-
-  // 3、比对用户权限菜单
-  const routes = mapMenuToRoutes(menuResult.data)
-
-  // 4、动态渲染路由
-  if (Array.isArray(routes)) {
-    for (const route of routes) {
-      router.addRoute('main', route)
-    }
-  }
-
-  // 5、跳转页面
-  router.push('/main/sys')
+  const user = userStore()
+  user.accountLogin(account)
 }
 </script>
 
