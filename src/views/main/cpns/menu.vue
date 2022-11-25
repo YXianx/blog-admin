@@ -4,6 +4,7 @@
     text-color="#C1C4CB"
     active-text-color="#fff"
     active-background-color="red"
+    :default-active="menuActive"
     :collapse="isCollapse"
     :collapse-transition = "false"
   >
@@ -51,6 +52,8 @@
 
 <script setup lang="ts">
 import { userStore } from '@/store/user'
+import { useRoute } from 'vue-router'
+import { pathMapToMenu } from '@/utils/global/map-menus'
 
 const props = defineProps({
   isCollapse: {
@@ -60,6 +63,9 @@ const props = defineProps({
 })
 
 const user = userStore()
+
+const route = useRoute()
+const menuActive = pathMapToMenu(user.userMenus, route.path)
 </script>
 
 <style scoped lang="less">

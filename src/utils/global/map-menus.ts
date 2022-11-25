@@ -1,5 +1,11 @@
 import type { RouteRecordRaw } from 'vue-router'
 import type { IUserMenu } from '@/views/login/types'
+
+/**
+ * 动态渲染用户权限菜单
+ * @param userMenus 用户权限路由
+ * @returns 用户路由列表
+ */
 export const mapMenuToRoutes = (userMenus: any[]): RouteRecordRaw[] => {
   const routes: RouteRecordRaw[] = []
   const allRoutes: RouteRecordRaw[] = []
@@ -31,4 +37,26 @@ export const mapMenuToRoutes = (userMenus: any[]): RouteRecordRaw[] => {
 
   _recurseGetRoute(userMenus)
   return routes
+}
+
+/**
+ * 当前路由匹配菜单Index
+ * @param userMenus 用户权限路由
+ * @param currentPath 当前路由
+ * @returns 菜单项Index
+ */
+export function pathMapToMenu (userMenus: IUserMenu[], currentPath: string): string | undefined {
+  for (let i = 0; i < userMenus.length; i++) {
+    const menu = userMenus[i]
+    if (menu.children.length) {
+      const findMenuIndex = pathMapToMenu(menu.children, currentPath)
+      if (findMenuIndex) {
+        return (i + 1) + '-' + (findMenuIndex) // menu.vue 渲染的菜单项index从1开始 所以此处的i需要+1才能对应上
+      }
+    } else {
+      if (menu.path === currentPath) {
+        return (i + 1) + ''
+      }
+    }
+  }
 }
