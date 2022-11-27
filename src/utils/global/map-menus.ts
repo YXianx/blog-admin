@@ -18,7 +18,7 @@ export const mapMenuToRoutes = (userMenus: any[]): RouteRecordRaw[] => {
     const route: any = files[key].default
     allRoutes.push(route)
   })
-  // console.log(allRoutes)
+  console.log(allRoutes)
 
 
   // 2、请求用户权限路由表后比对路由

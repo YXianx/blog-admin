@@ -62,6 +62,10 @@ class YXRequest {
   post<T = any>(config: YXRequestConfig<T>): Promise<T> {
     return this.request<T>({ ...config, method: 'POST' })
   }
+
+  delete<T = any>(config: YXRequestConfig<T>): Promise<T> {
+    return this.request<T>({ ...config, method: 'DELETE' })
+  }
 }
 
 export default YXRequest
