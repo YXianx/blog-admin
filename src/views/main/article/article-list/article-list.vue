@@ -129,7 +129,7 @@
           <el-table-column label="操作" width="140">
             <template #default="scope">
               <div class="manage">
-                <el-button type="primary" size="small">编辑</el-button>
+                <el-button type="primary" size="small" @click="editClick(scope.row.id)">编辑</el-button>
                 <el-popconfirm title="是否删除该篇文章?" @confirm="deleteClick(scope.row.id)">
                   <template #reference>
                     <el-button type="danger" size="small">删除</el-button>
@@ -152,6 +152,7 @@ import { yxRequest } from '@/service';
 import type { ISelectOption, IArticleItem } from './types'
 import { FormInstance } from 'element-plus';
 import showMsg from '@/utils/message/message';
+import router from '@/router';
 
 const formRef = ref<FormInstance>()
 const tags = [
@@ -260,6 +261,13 @@ const handleSwitchChange = (status: boolean) => {
       }
     })
   }
+}
+
+/**
+ * 编辑
+ */
+const editClick = (id: number) => {
+  router.push(`/main/articles/${id}`)
 }
 
 /**
