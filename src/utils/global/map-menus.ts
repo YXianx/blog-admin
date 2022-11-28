@@ -18,11 +18,11 @@ export const mapMenuToRoutes = (userMenus: any[]): RouteRecordRaw[] => {
     const route: any = files[key].default
     allRoutes.push(route)
   })
-  console.log(allRoutes)
 
 
   // 2、请求用户权限路由表后比对路由
   const _recurseGetRoute = (menus: IUserMenu[]) => {
+    if(!menus) return
     for (const menu of menus) {
       if (!menu.children.length) {
         const route: any = allRoutes.find((item) => menu.path === item.path)

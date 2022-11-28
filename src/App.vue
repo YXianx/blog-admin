@@ -20,6 +20,11 @@
       margin: 0 10px;
     }
 }
+
+// 2、el-upload
+.el-upload-dragger {
+  padding: 10px !important;
+}
 // reset end
 
 // common

@@ -16,7 +16,7 @@
         ></mavon-editor>
       </div>
 
-      <el-dialog v-model="dialogVisible" title="发布文章">
+      <el-dialog v-model="dialogVisible" :title="mode === 'create' ? '发布文章' : '编辑文章'">
         <div class="edit-container">
           <el-form>
             <el-form-item label="文章分类">
@@ -35,13 +35,19 @@
             <el-form-item label="上传封面">
               <el-upload
                 class="avatar-uploader"
-                action="http://182.160.0.194:8888/oss/upload"
-                :show-file-list="false"
+                action="/api/oss/upload"
+                drag
+                multiple
                 :on-success="handleAvatarSuccess"
                 :before-upload="beforeAvatarUpload"
               >
-                <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-                <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+              <img
+                v-if="articleModel.cover"
+                :src="articleModel.cover"
+                style="width:100%; height: 200px"
+                class="avatar"
+              />
+              <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
               </el-upload>
             </el-form-item>
             <el-form-item label="置顶">
@@ -83,20 +89,18 @@ const articleModel = reactive({
   type: 1
 })
 
-const imageUrl = ref('')
-const handleAvatarSuccess: UploadProps['onSuccess'] = (
-  response,
-  uploadFile
-) => {
-  imageUrl.value = URL.createObjectURL(uploadFile.raw!)
+// 上传成功事件
+// 返回文件接口Response数据
+const handleAvatarSuccess: UploadProps['onSuccess'] = (response, uploadFile) => {
+  articleModel.cover = response.data
 }
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   if (rawFile.type !== 'image/jpeg') {
     showMsg('error', 'Avatar picture must be JPG format!')
     return false
-  } else if (rawFile.size / 1024 / 1024 > 2) {
-    showMsg('error', 'Avatar picture size can not exceed 2MB!')
+  } else if (rawFile.size / 1024 / 1024 > 1) {
+    showMsg('error', '图片文件大小超过1MB!')
     return false
   }
   return true
@@ -177,11 +181,15 @@ init()
   .article-editor {
     height: calc(100vh - 260px);
   }
-  .upload-img {
-    width: 360px;
-    height: 180px;
-    border-radius: 6px;
-  }
 }
 // articles end
+
+.avatar-uploader {
+  width: 250px;
+  // height: 180px;
+  .avatar {
+    display: block;
+  }
+}
+
 </style>
