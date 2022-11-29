@@ -25,6 +25,12 @@
 .el-upload-dragger {
   padding: 10px !important;
 }
+
+// 3、el-autocomplete
+// .el-autocomplete-suggestion li:hover {
+//   background-color: #F3F9EC !important;
+//   color: #7EC150;
+// }
 // reset end
 
 // common
