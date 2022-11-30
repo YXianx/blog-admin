@@ -1,6 +1,6 @@
 interface IArticleModel {
   status: number,
-  category: number,
+  categoryId: number,
   content: string,
   cover: string,
   id: number,

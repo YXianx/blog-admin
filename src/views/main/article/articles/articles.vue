@@ -10,6 +10,7 @@
       <div class="article-editor">
         <mavon-editor
         style="height: 100%;"
+        ref="md"
         v-model="articleModel.content"
         @change="changeEdit"
         @imgAdd="handleImgAdd"
@@ -161,15 +162,16 @@
 import { ref, reactive, computed } from 'vue'
 import { yxRequest } from '@/service';
 import { useRoute } from 'vue-router'
+import router from '@/router/index';
 import showMsg from '@/utils/message/message';
 import { queryCategoryById, insertUserTags } from '@/service/common/article'
-
 import type { UploadProps } from 'element-plus'
 import type { IArticleModel, ICategoryItem, ITagItem } from './types'
 
 const route = useRoute()
 const mode = ref("")
-const dialogVisible = ref(true)
+const md = ref()
+const dialogVisible = ref(false)
 const articleId = ref(-1)
 const categoryInfo = reactive({id: 0, categoryName: ''})
 const tagName = ref('')
@@ -178,7 +180,7 @@ const categoryList = ref<ICategoryItem[]>([])
 const tagList = ref<ITagItem[]>([])
 const articleModel = reactive<IArticleModel>({
   status: 1,
-  category: categoryInfo.id,
+  categoryId: categoryInfo.id,
   content: "",
   cover: "",
   id: 0,
@@ -188,12 +190,19 @@ const articleModel = reactive<IArticleModel>({
   type: 1
 })
 
-// 上传成功事件
-// 返回文件接口Response数据
+/**
+ * 文件上传成功事件
+ * @param response 上传成功信息
+ * @param uploadFile 文件信息
+ */
 const handleAvatarSuccess: UploadProps['onSuccess'] = (response, uploadFile) => {
   articleModel.cover = response.data
 }
 
+/**
+ * 上传前校验文件
+ * @param rawFile 文件信息
+ */
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   if (rawFile.type !== 'image/jpeg') {
     showMsg('error', 'Avatar picture must be JPG format!')
@@ -205,14 +214,37 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   return true
 }
 
+// TODO:思路->博客图片上传，先上传到upload文件接口，获取返回的网络地址，替换掉文章内的本地地址
 const changeEdit = (render: string) => {
   console.log(render)
 }
 
 /**
- * 添加图片
+ * md图片文件上传
+ * @param mdImgId md中图片的占位虚拟地址
+ * @param imgFile 图片文件
  */
-const handleImgAdd = () => {
+const handleImgAdd = (mdImgId: string, imgFile: File) => {
+  console.log(imgFile.size / 1024 / 1024);
+
+  const formData = new window.FormData()  // 以表单方式提交
+  if (imgFile.size / 1024 / 1024 <= 1) {
+    formData.append('file', imgFile)
+    yxRequest.post({
+      url: '/oss/upload',
+      data: {
+        file: imgFile
+      },
+      headers: {
+        'Content-Type': 'multipart/form-data' // 设置请求头为文件类型，只有multipart/form-data才可传输文件
+      }
+    }).then((result) => {
+      const url = result.data
+      md.value.$img2Url(mdImgId, url)  // 将云端图片真实地址替换掉md中的占位虚拟地址
+    })
+  } else {
+    showMsg('warning', '图片大小只能在1MB以下')
+  }
 }
 
 /**
@@ -229,7 +261,7 @@ const addCategory = (item: ICategoryItem) => {
 const removeCategory = () => {
   categoryInfo.categoryName = ''
   categoryInfo.id = 0
-  articleModel.category = categoryInfo.id
+  articleModel.categoryId = categoryInfo.id
 }
 
 /**
@@ -338,7 +370,7 @@ const handleTagsSelect = (item: ITagItem) => {
  */
 const handleItemSelect = (item: ICategoryItem) => {
   addCategory(item)
-  articleModel.category = item.id
+  articleModel.categoryId = item.id
 }
 
 const tagClass = computed(() => {
@@ -351,8 +383,12 @@ const tagClass = computed(() => {
 /**
  * 确认发布博客
  */
-const postArticleClick = () => {
-  if (articleModel.category === 0) {
+const postArticleClick = async () => {
+  if (articleModel.title === '') {
+    showMsg('error', '未填写文章标题')
+    return
+  }
+  if (articleModel.categoryId === 0) {
     showMsg('error', '未选择文章分类')
     return
   }
@@ -360,7 +396,29 @@ const postArticleClick = () => {
     showMsg('error', '请至少选择一个标签')
     return
   }
-  console.log(articleModel);
+
+  let postResult
+  if (mode.value === 'create') {
+    postResult = await yxRequest.post({
+      url: '/admin/articles/insert',
+      data: {
+        ...articleModel
+      }
+    })
+  } else {
+    postResult = await yxRequest.post({
+      url: '/admin/articles/update',
+      data: {
+        ...articleModel
+      }
+    })
+  }
+
+  if (postResult.code === 2001) {
+    showMsg('success', '发布成功')
+    dialogVisible.value = false
+    router.push('/main/article-list')
+  }
 }
 
 /**
@@ -404,7 +462,7 @@ const init = async () => {
     categoryInfo.categoryName = categoryDetail.data.categoryName
 
     articleModel.id = id
-    articleModel.category = category.id
+    articleModel.categoryId = category.id
     articleModel.content = content
     articleModel.cover = cover
     articleModel.isTop = isTop
