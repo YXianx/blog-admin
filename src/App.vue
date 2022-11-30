@@ -25,12 +25,6 @@
 .el-upload-dragger {
   padding: 10px !important;
 }
-
-// 3、el-autocomplete
-// .el-autocomplete-suggestion li:hover {
-//   background-color: #F3F9EC !important;
-//   color: #7EC150;
-// }
 // reset end
 
 // common
@@ -49,6 +43,10 @@
     height: 100%;
     background-color: #409eff;
   }
+}
+.pagination-container {
+  margin: 20px 0;
+  float: right;
 }
 // common end
 

@@ -222,6 +222,10 @@ const init = async () => {
   // 3、请求文章列表
   const listPage = await yxRequest.get({
     url: '/admin/articles/listPage',
+    params: {
+      current: 1,
+      size: 100
+    }
   })
   articleList.value = listPage.data.records
 }

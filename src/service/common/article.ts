@@ -1,4 +1,5 @@
 import { yxRequest } from "..";
+import type { ICategoriesData } from '@/views/main/article/categories/types'
 
 /**
  * 根据ID查询分类详情
@@ -19,6 +20,24 @@ export function insertUserTags(tagName: string) {
     url: '/admin/tags/insert',
     data: {
       tagName
+    }
+  })
+}
+
+/**
+ * 查询分类项列表
+ * @param current 当前页
+ * @param size 数据条目
+ * @param keyword 关键词
+ * @returns
+ */
+export function queryCategoryPageList(current: number, size: number, keyword?: string) {
+  return yxRequest.get<ICategoriesData>({
+    url: '/admin/category/listPage',
+    params: {
+      current,
+      keyword,
+      size
     }
   })
 }

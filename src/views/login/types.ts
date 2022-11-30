@@ -4,20 +4,12 @@ interface Iaccount {
   password: string
 }
 
-// 登录响应数据接口
-interface IResult {
-  flag: boolean,
-  code: number,
-  message: string,
-  data: string
-}
 interface IMenuResult {
   flag: boolean,
   code: number,
   message: string,
   data: IUserMenu[]
 }
-
 
 // 路由文件接口
 interface IRouteFile {
@@ -42,7 +34,6 @@ interface IUserMenu {
 
 export type {
   Iaccount,
-  IResult,
   IMenuResult,
   IRouteFile,
   IUserMenu
