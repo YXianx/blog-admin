@@ -9,9 +9,13 @@
           <el-button type="primary" :icon="Plus" @click="addClick">
             新增
           </el-button>
-          <el-button type="danger" :icon="DeleteFilled" disabled>
-            批量删除
-          </el-button>
+          <el-popconfirm title="是否删除所勾选的分类项?" @confirm="selectionRemoveClick">
+                <template #reference>
+                  <el-button type="danger" :icon="DeleteFilled">
+                    批量删除
+                  </el-button>
+                </template>
+              </el-popconfirm>
         </div>
         <div class="search">
           <el-input placeholder="请输入分类名" v-model="searchName">
@@ -25,7 +29,7 @@
           <el-button type="primary" :icon="Search" @click="searchClick">搜索</el-button>
         </div>
       </div>
-      <el-table :data="categoryList" border>
+      <el-table :data="categoryList" border @selection-change="handleSelectionChange">
         <el-table-column type="selection"></el-table-column>
         <el-table-column prop="categoryName" label="分类名" align="center"></el-table-column>
         <el-table-column prop="articleNum" label="文章数" align="center"></el-table-column>
@@ -34,7 +38,11 @@
           <template #default="scope">
             <div class="control-btn">
               <el-button type="primary" size="small" @click="editClick(scope.row.id)">编辑</el-button>
-              <el-button type="danger" size="small">删除</el-button>
+              <el-popconfirm title="是否删除该分类?" @confirm="removeClick(scope.row.id)">
+                <template #reference>
+                  <el-button type="danger" size="small">删除</el-button>
+                </template>
+              </el-popconfirm>
             </div>
           </template>
         </el-table-column>
@@ -74,7 +82,7 @@
 import { Plus, DeleteFilled, Search, Refresh } from '@element-plus/icons-vue';
 import { ref } from 'vue';
 
-import { queryCategoryPageList, insertCategory, queryCategoryById, updateCategory } from '@/service/common/article'
+import { queryCategoryPageList, insertCategory, queryCategoryById, updateCategory, delCategory } from '@/service/common/article'
 import type { ICategoryItem } from './types'
 import showMsg from '@/utils/message/message';
 
@@ -82,11 +90,13 @@ const currentPage = ref(1) // 当前页
 const pageSize = ref(5) // 单页显示条数
 const totalData = ref(0) // 总条数
 const categoryList = ref<ICategoryItem[]>([])
-const dialogVisible = ref(true)
+const dialogVisible = ref(false)
 const mode = ref('insert')
 const row = ref<ICategoryItem>()
 const searchName = ref('')
 const categoryName = ref('')
+const oldCategoryName = ref('')
+const selectionItems = ref<ICategoryItem[]>()
 
 /**
  * 更改显示条目数回调
@@ -140,6 +150,7 @@ const addClick = () => {
  * 取消按钮
  */
 const cancelClick = () => {
+  categoryName.value = ''
   dialogVisible.value = false
 }
 /**
@@ -161,6 +172,10 @@ const saveClick = async (id: number) => {
     }
   } else {
     if (row.value) {
+      if (oldCategoryName.value === categoryName.value) {
+        showMsg('warning', '分类名相同，编辑失败')
+        return
+      }
       const updateResult = await updateCategory(row.value.id, categoryName.value)
       if (updateResult.code === 2001) {
         refreshPage()
@@ -182,6 +197,48 @@ const editClick = async (id: number) => {
   const detailResult = await queryCategoryById(id)
   row.value = detailResult.data
   categoryName.value = detailResult.data.categoryName
+  oldCategoryName.value = categoryName.value
+}
+/**
+ * 删除按钮
+ * @param id 分类ID
+ */
+const removeClick = (id: number) => {
+  removeCategory([id])
+}
+/**
+ * 批量删除
+ */
+const selectionRemoveClick = () => {
+  if(!selectionItems.value?.length) {
+    showMsg('warning', '删除失败，暂未勾选分类项')
+    return
+  }
+  const ids: number[] = (selectionItems.value as Array<ICategoryItem>).map((item: ICategoryItem) => item.id)
+  removeCategory(ids)
+}
+/**
+ * el-table 勾选回调
+ * @param items 勾选项集合
+ */
+const handleSelectionChange = (items: ICategoryItem[]) => {
+  selectionItems.value = items
+}
+/**
+ * 封装删除分类请求
+ * @param ids 分类ID集合
+ */
+const removeCategory = (ids: number[]) => {
+  if(!ids.length) {
+    return
+  }
+  delCategory(ids)
+    .then((result) => {
+      if(result.code === 2001) {
+        refreshPage()
+        showMsg('success', '删除成功')
+      }
+    })
 }
 /**
  * 页面初始化
