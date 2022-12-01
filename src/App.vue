@@ -48,6 +48,10 @@
   margin: 20px 0;
   float: right;
 }
+.control-btns {
+  display: flex;
+  justify-content: flex-end;
+}
 // common end
 
 .app {

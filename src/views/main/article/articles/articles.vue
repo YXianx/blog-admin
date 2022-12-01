@@ -146,10 +146,10 @@
                 <el-radio :label="2">私密</el-radio>
               </el-radio-group>
             </el-form-item>
-              <div class="control-btns">
-                <el-button size="large" @click="cancelClick">取消</el-button>
-                <el-button type="primary" size="large" @click="postArticleClick">发表</el-button>
-              </div>
+            <div class="control-btns">
+              <el-button size="large" @click="cancelClick">取消</el-button>
+              <el-button type="primary" size="large" @click="postArticleClick">发表</el-button>
+            </div>
           </el-form>
         </div>
       </el-dialog>
@@ -529,10 +529,7 @@ init()
     display: block;
   }
 }
-.control-btns {
-  display: flex;
-  justify-content: flex-end;
-}
+
 
 // category
 .popover-container {

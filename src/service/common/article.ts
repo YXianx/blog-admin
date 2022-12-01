@@ -1,12 +1,13 @@
 import { yxRequest } from "..";
 import type { ICategoriesData } from '@/views/main/article/categories/types'
+import { IResult } from "@/types/common";
 
 /**
  * 根据ID查询分类详情
  * @param id 分类ID
  */
 export function queryCategoryById(id: number) {
-  return yxRequest.get({
+  return yxRequest.get<IResult>({
     url: `/admin/category/detail/${id}`
   })
 }
@@ -29,7 +30,6 @@ export function insertUserTags(tagName: string) {
  * @param current 当前页
  * @param size 数据条目
  * @param keyword 关键词
- * @returns
  */
 export function queryCategoryPageList(current: number, size: number, keyword?: string) {
   return yxRequest.get<ICategoriesData>({
@@ -38,6 +38,34 @@ export function queryCategoryPageList(current: number, size: number, keyword?: s
       current,
       keyword,
       size
+    }
+  })
+}
+
+/**
+ * 新增分类
+ * @param categoryName 分类名
+ */
+export function insertCategory(categoryName: string) {
+  return yxRequest.post<IResult>({
+    url: '/admin/category/insert',
+    data: {
+      categoryName
+    }
+  })
+}
+
+/**
+ * 修改分类
+ * @param id 分类ID
+ * @param categoryName 分类名
+ */
+export function updateCategory(id: number, categoryName: string) {
+  return yxRequest.post<IResult>({
+    url: '/admin/category/update',
+    data: {
+      id,
+      categoryName
     }
   })
 }
