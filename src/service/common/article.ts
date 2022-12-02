@@ -10,7 +10,7 @@ import { IResult } from "@/types/common";
  * @param keyword 关键词
  */
 export function queryArticleList(current?: number, size?: number, keyword?: string) {
-  return yxRequest.get<ITagData>({
+  return yxRequest.get<IResult>({
     url: '/admin/articles/listPage',
     params: {
       current,
