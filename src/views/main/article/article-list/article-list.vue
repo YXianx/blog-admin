@@ -139,6 +139,16 @@
             </template>
           </el-table-column>
         </el-table>
+        <el-pagination
+          class="pagination-container"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage"
+          :page-sizes="[5, 10, 20, 30]"
+          :page-size="pageSize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="totalData">
+        </el-pagination>
       </div>
     </el-card>
   </div>
@@ -148,6 +158,7 @@
 import { ref, reactive, computed } from 'vue'
 import { Search, DeleteFilled, Download, MostlyCloudy, Refresh } from '@element-plus/icons-vue'
 import { yxRequest } from '@/service';
+import { queryArticleList } from '@/service/common/article'
 
 import type { ISelectOption, IArticleItem } from './types'
 import { FormInstance } from 'element-plus';
@@ -155,6 +166,9 @@ import showMsg from '@/utils/message/message';
 import router from '@/router';
 
 const formRef = ref<FormInstance>()
+const currentPage = ref(1)
+const pageSize = ref(5)
+const totalData = ref(0)
 const tags = [
   { state: '状态', val: 'all' },
   { state: '全部', val: 'all' },
@@ -195,40 +209,21 @@ const handleTagClick = async (index: number) => {
   }
 }
 
-/**
- * 页面初始化
- */
-const init = async () => {
-  // 1、请求分类下拉项
-  const categoryResult = await yxRequest.get({
-    url: '/admin/category/listPage',
-    params: {
-      current: 1,
-      size: 100
-    }
-  })
-  selectOptions.category = categoryResult.data.records
-
-  // 2、请求标签下拉项
-  const tagsResult = await yxRequest.get({
-    url: '/admin/tags/listPage',
-    params: {
-      current: 1,
-      size: 100
-    }
-  })
-  selectOptions.tags = tagsResult.data.records
-
-  // 3、请求文章列表
-  const listPage = await yxRequest.get({
-    url: '/admin/articles/listPage',
-    params: {
-      current: 1,
-      size: 100
-    }
-  })
+const handleSizeChange = async (size: number) => {
+  const listPage = await queryArticleList(currentPage.value, size)
+  currentPage.value = listPage.data.current
+  pageSize.value = listPage.data.size
+  totalData.value = listPage.data.total
   articleList.value = listPage.data.records
 }
+const handleCurrentChange = async (page: number) => {
+  const listPage = await queryArticleList(page, pageSize.value)
+  currentPage.value = listPage.data.current
+  pageSize.value = listPage.data.size
+  totalData.value = listPage.data.total
+  articleList.value = listPage.data.records
+}
+
 
 /**
  * 字符串转为数组
@@ -240,7 +235,7 @@ const stringToArray = computed(() => {
       return [str]
     }
     if (typeof str === 'string')
-      return str.split(split)
+    return str.split(split)
   }
 })
 
@@ -314,19 +309,51 @@ const submitClick = () => {
   })
 }
 
+/**
+ * 重置
+ */
 const resetArticleList = (isShowMsg: boolean = false, msg: string = '重制成功') => {
   setTimeout(() => {
-    yxRequest.get({
-      url: '/admin/articles/listPage',
-    }).then((result) => {
+    queryArticleList().then((result) => {
       articleList.value = result.data.records
       if (isShowMsg)
-        showMsg('success', msg)
+      showMsg('success', msg)
     })
-  }, 500)
+  }, 300)
 }
 
-init()
+/**
+ * 页面初始化
+ */
+const refreshPage = async () => {
+  // 1、请求分类下拉项
+  const categoryResult = await yxRequest.get({
+    url: '/admin/category/listPage',
+    params: {
+      current: 1,
+      size: 100
+    }
+  })
+  selectOptions.category = categoryResult.data.records
+
+  // 2、请求标签下拉项
+  const tagsResult = await yxRequest.get({
+    url: '/admin/tags/listPage',
+    params: {
+      current: 1,
+      size: 100
+    }
+  })
+  selectOptions.tags = tagsResult.data.records
+
+  // 3、请求文章列表
+  const listPage = await queryArticleList(currentPage.value, pageSize.value)
+  currentPage.value = listPage.data.current
+  pageSize.value = listPage.data.size
+  totalData.value = listPage.data.total
+  articleList.value = listPage.data.records
+}
+refreshPage()
 </script>
 
 <style lang="less" scoped>
