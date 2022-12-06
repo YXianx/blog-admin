@@ -7,9 +7,13 @@
         <el-form>
           <el-row>
             <el-col :span="14">
-              <el-button type="danger" icon="DeleteFilled" plain>
-                批量删除
-              </el-button>
+              <el-popconfirm title="是否删除所勾选的分类项?" @confirm="selectionRemoveClick">
+                <template #reference>
+                  <el-button type="danger" plain icon="DeleteFilled">
+                    批量删除
+                  </el-button>
+                </template>
+              </el-popconfirm>
               <el-button type="success" icon="CircleCheck" plain>
                 批量通过
               </el-button>
@@ -41,8 +45,8 @@
           </el-row>
         </el-form>
       </div>
-      <el-table :data="commentList" border>
-        <el-table-column type="selection" width="55" align="center"></el-table-column>
+      <el-table :data="commentList" border @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" align="center" ></el-table-column>
         <el-table-column prop="avatar" label="头像" align="center">
           <template #default="socpe">
             <img :src="socpe.row.avatar" alt="" style="width: 50px; height: 50px">
@@ -66,7 +70,7 @@
         <el-table-column label="操作" align="center">
           <template #default="scope">
             <div class="control-btn">
-              <el-popconfirm title="是否删除该分类?" @confirm="removeClick(scope.row.id)">
+              <el-popconfirm title="是否删除该评论?" @confirm="removeClick(scope.row.id)">
                 <template #reference>
                   <el-button type="danger" size="small">删除</el-button>
                 </template>
@@ -94,12 +98,13 @@ import { ref, computed, reactive } from 'vue'
 import StatusMenu from '@/components/status-menu.vue';
 import type { tagMenuType } from '@/types/common'
 import type { ICommentItem } from './types'
-import { queryCommentList } from '@/service/common/information'
+import { queryCommentList, delComment } from '@/service/common/information'
 import showMsg from '@/utils/message/message';
 
 const currentPage = ref(1) // 当前页
 const pageSize = ref(5) // 单页显示条数
 const totalData = ref(0) // 总条数
+const selectionItems = ref<ICommentItem[]>()
 const commentModel = reactive({
   type: "",
   nickName: ""
@@ -141,6 +146,9 @@ const handleCurrentChange = (page: number) => {
   currentPage.value = page
   refreshPage()
 }
+const handleSelectionChange = (ids: ICommentItem[]) => {
+  selectionItems.value = ids
+}
 
 /**
  * 搜索
@@ -163,7 +171,30 @@ const searchClick = () => {
  * 删除评论
  * @param id 评论ID
  */
-const removeClick = (id: number) => {}
+const removeClick = (id: number) => {
+  delComment([id])
+    .then((result) => {
+      if (result.code === 2001) {
+        refreshPage()
+        showMsg('success', '批量删除成功')
+      }
+  })
+}
+
+const selectionRemoveClick = () => {
+  if(!selectionItems.value?.length) {
+    showMsg('warning', '删除失败，暂未勾选分类项')
+    return
+  }
+  const ids: number[] = (selectionItems.value as Array<ICommentItem>).map((item: ICommentItem) => item.id)
+  delComment(ids)
+    .then((result) => {
+      if (result.code === 2001) {
+        refreshPage()
+        showMsg('success', '批量删除成功')
+      }
+    })
+}
 
 /**
  *

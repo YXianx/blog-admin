@@ -10,12 +10,12 @@
             新增
           </el-button>
           <el-popconfirm title="是否删除所勾选的分类项?" @confirm="selectionRemoveClick">
-                <template #reference>
-                  <el-button type="danger" :icon="DeleteFilled">
-                    批量删除
-                  </el-button>
-                </template>
-              </el-popconfirm>
+            <template #reference>
+              <el-button type="danger" :icon="DeleteFilled">
+                批量删除
+              </el-button>
+            </template>
+          </el-popconfirm>
         </div>
         <div class="search">
           <el-input placeholder="请输入分类名" v-model="searchName">
