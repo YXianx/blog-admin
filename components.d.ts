@@ -41,6 +41,8 @@ declare module '@vue/runtime-core' {
     ElUpload: typeof import('element-plus/es')['ElUpload']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    StateMenu: typeof import('./src/components/state-menu.vue')['default']
+    StatusMenu: typeof import('./src/components/status-menu.vue')['default']
     TagCloud: typeof import('./src/components/tag-cloud.vue')['default']
   }
 }

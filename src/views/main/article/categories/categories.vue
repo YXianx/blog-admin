@@ -32,7 +32,7 @@
       <el-table :data="categoryList" border @selection-change="handleSelectionChange">
         <el-table-column type="selection"></el-table-column>
         <el-table-column prop="categoryName" label="分类名" align="center"></el-table-column>
-        <el-table-column prop="articleNum" label="文章数" align="center"></el-table-column>
+        <el-table-column prop="articleCount" label="文章数" align="center"></el-table-column>
         <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
         <el-table-column label="操作" align="center" width="140">
           <template #default="scope">

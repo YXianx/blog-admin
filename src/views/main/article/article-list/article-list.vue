@@ -4,15 +4,7 @@
       <div class="card-title">
         文章列表
       </div>
-      <div class="tag-status">
-        <template v-for="(tag, index) in tags" :key="tag.val">
-          <span
-            :class="currentIndex === index ? 'active' : ''"
-            @click="index != 0 ? handleTagClick(index) : ''"
-          >{{ tag.state }}</span>
-        </template>
-        <span></span>
-      </div>
+      <StatusMenu :tags="tags" @change-status="handleStatusChange" />
       <div class="search-control">
         <el-form ref="formRef" :model="formModel">
           <el-row :gutter="15">
@@ -157,10 +149,12 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { Search, DeleteFilled, Download, MostlyCloudy, Refresh } from '@element-plus/icons-vue'
+import StatusMenu  from '@/components/status-menu.vue'
 import { yxRequest } from '@/service';
 import { queryArticleList } from '@/service/common/article'
 
 import type { ISelectOption, IArticleItem } from './types'
+import type { tagMenuType } from '@/types/common'
 import { FormInstance } from 'element-plus';
 import showMsg from '@/utils/message/message';
 import router from '@/router';
@@ -169,13 +163,12 @@ const formRef = ref<FormInstance>()
 const currentPage = ref(1)
 const pageSize = ref(5)
 const totalData = ref(0)
-const tags = [
-  { state: '状态', val: 'all' },
-  { state: '全部', val: 'all' },
-  { state: '公开', val: 'public' },
-  { state: '私密', val: 'private' },
-  { state: '草稿箱', val: 'draft' },
-  { state: '回收站', val: 'other' },
+const tags: tagMenuType[] = [
+  { tagName: '全部'},
+  { tagName: '公开', status: 1 },
+  { tagName: '私密', status: 2 },
+  { tagName: '草稿箱', status: 3 },
+  { tagName: '回收站', status: 4 },
 ]
 const currentIndex = ref(1)
 const articleList = ref<IArticleItem[]>([])
@@ -191,22 +184,14 @@ const formModel = reactive({
 })
 
 // 状态标签点击事件
-const handleTagClick = async (index: number) => {
-  currentIndex.value = index
-  if (index != 1) {
-    const listPage = await yxRequest.get({
-      url: '/admin/articles/listPage',
-      params: {
-        status: index - 1
-      }
-    })
-    articleList.value = listPage.data.records
-  } else {
-    const listPage = await yxRequest.get({
-      url: '/admin/articles/listPage',
-    })
-    articleList.value = listPage.data.records
-  }
+const handleStatusChange = async (status: number) => {
+  const listPage = await yxRequest.get({
+    url: '/admin/articles/listPage',
+    params: {
+      status: status
+    }
+  })
+  articleList.value = listPage.data.records
 }
 
 const handleSizeChange = async (size: number) => {
@@ -360,33 +345,6 @@ refreshPage()
 .article-list {
   width: 100%;
   height: 100%;
-  // tag-status
-  .tag-status {
-    display: flex;
-    align-items: center;
-    margin: 24px 0;
-    span {
-      margin-right: 20px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: color .2s;
-      &:nth-child(1) {
-        padding: 1px 6px;
-        font-size: 14px;
-        color: #5A9CF8;
-        border: 1.5px solid #8bb1e6;
-        border-radius: 4px;
-        cursor:auto;
-      }
-      &:hover {
-        color: #5A9CF8;
-      }
-    }
-    .active {
-      color: #5A9CF8;
-    }
-  }
-  // tag-status end
 
   .article-table {
     .article-control {

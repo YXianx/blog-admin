@@ -32,14 +32,14 @@
             </el-icon>
             <span>{{ menu.name }}</span>
           </template>
-          <template  v-if="menu.children" v-for="(children, cIndex) in menu.children">
-            <router-link :to="children.path" custom  v-slot="props">
-              <el-menu-item :index="(index + 1) + '-' + (cIndex + 1)" @click="props.navigate">
+          <template  v-if="menu.children" v-for="(sub, subIndex) in menu.children" :key="sub">
+            <router-link :to="sub.path" custom  v-slot="props">
+              <el-menu-item :index="(index + 1) + '-' + (subIndex + 1)" @click="props.navigate">
                 <template #title>
                   <el-icon>
-                    <component :is="children.icon"></component>
+                    <component :is="sub.icon"></component>
                   </el-icon>
-                  <span>{{ children.name }}</span>
+                  <span>{{ sub.name }}</span>
                 </template>
               </el-menu-item>
             </router-link>

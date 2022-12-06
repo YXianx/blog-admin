@@ -36,7 +36,7 @@
             <el-tag>{{ scope.row.tagName }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="tagNum" label="文章数" align="center"></el-table-column>
+        <el-table-column prop="articleCount" label="文章数" align="center"></el-table-column>
         <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
         <el-table-column label="操作" align="center" width="140">
           <template #default="scope">

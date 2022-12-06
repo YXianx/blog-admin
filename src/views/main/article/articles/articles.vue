@@ -216,7 +216,7 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 
 // TODO:思路->博客图片上传，先上传到upload文件接口，获取返回的网络地址，替换掉文章内的本地地址
 const changeEdit = (render: string) => {
-  console.log(render)
+  // console.log(render)
 }
 
 /**
