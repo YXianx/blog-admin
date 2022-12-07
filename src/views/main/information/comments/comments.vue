@@ -14,7 +14,7 @@
                   </el-button>
                 </template>
               </el-popconfirm>
-              <el-button type="success" icon="CircleCheck" plain>
+              <el-button type="success" icon="CircleCheck" plain @click="approveClick">
                 批量通过
               </el-button>
             </el-col>
@@ -98,13 +98,14 @@ import { ref, computed, reactive } from 'vue'
 import StatusMenu from '@/components/status-menu.vue';
 import type { tagMenuType } from '@/types/common'
 import type { ICommentItem } from './types'
-import { queryCommentList, delComment } from '@/service/common/information'
+import { queryCommentList, delComment, reviewComment } from '@/service/common/information'
 import showMsg from '@/utils/message/message';
 
 const currentPage = ref(1) // 当前页
 const pageSize = ref(5) // 单页显示条数
 const totalData = ref(0) // 总条数
 const selectionItems = ref<ICommentItem[]>()
+const reviewState = ref<string | number>('')
 const commentModel = reactive({
   type: "",
   nickName: ""
@@ -116,10 +117,18 @@ const tags: tagMenuType[] = [
 ]
 const commentList = ref<ICommentItem[]>()
 
+/**
+ * 审核状态更改
+ * @param isReview 审核状态
+ */
 const handleStatusChange = (isReview: number) => {
+  reviewState.value = isReview
   refreshPage(1, 100, isReview)
 }
 
+/**
+ * review参数转为state
+ */
 const reviewMapState = computed(() => {
   return (row: ICommentItem) => {
     if (!row.isReview) {
@@ -138,14 +147,26 @@ const reviewMapState = computed(() => {
   }
 })
 
+/**
+ * 条数改变回调
+ * @param size 显示条数
+ */
 const handleSizeChange = (size: number) => {
   pageSize.value = size
-  refreshPage()
+  refreshPage(currentPage.value, size, reviewState.value)
 }
+/**
+ * 页码改变回调
+ * @param page 当前页
+ */
 const handleCurrentChange = (page: number) => {
   currentPage.value = page
-  refreshPage()
+  refreshPage(page, pageSize.value, reviewState.value)
 }
+/**
+ * 勾选回调
+ * @param ids ID集合
+ */
 const handleSelectionChange = (ids: ICommentItem[]) => {
   selectionItems.value = ids
 }
@@ -181,6 +202,9 @@ const removeClick = (id: number) => {
   })
 }
 
+/**
+ * 批量删除
+ */
 const selectionRemoveClick = () => {
   if(!selectionItems.value?.length) {
     showMsg('warning', '删除失败，暂未勾选分类项')
@@ -197,12 +221,30 @@ const selectionRemoveClick = () => {
 }
 
 /**
- *
+ * 批量通过
+ */
+const approveClick = () => {
+  if(!selectionItems.value?.length) {
+    showMsg('warning', '删除失败，暂未勾选评论项')
+    return
+  }
+  const ids: number[] = (selectionItems.value as Array<ICommentItem>).map((item: ICommentItem) => item.id)
+  reviewComment(ids)
+    .then((result) => {
+      if (result.code === 2001) {
+        refreshPage(currentPage.value, pageSize.value, 0) // 重新渲染当前未审核页面
+        showMsg('success', '批量通过成功')
+      }
+    })
+}
+
+/**
+ * 列表数据刷新
  * @param current 当前页
  * @param size 查询条数
  * @param isReview 是否审核通过
  */
-const refreshPage = (current: number = currentPage.value, size: number = pageSize.value, isReview?: number) => {
+const refreshPage = (current: number = currentPage.value, size: number = pageSize.value, isReview: number | string = '') => {
   queryCommentList({
     current,
     size,

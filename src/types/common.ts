@@ -19,7 +19,7 @@ type tagMenuType = { tagName: string, status?: number }
  */
 type commentQueryType = {
   current: number,
-  isReview?: number,
+  isReview?: number | string,
   keyword?: string,
   type?: number | string,
   size: number

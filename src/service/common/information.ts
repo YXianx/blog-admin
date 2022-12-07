@@ -14,9 +14,29 @@ export function queryCommentList(query: commentQueryType) {
   })
 }
 
+/**
+ * 删除评论
+ * @param ids ID集合
+ */
 export function delComment(ids: number[]) {
   return yxRequest.delete<IResult>({
     url: '/admin/comments/delete',
     data: ids
   })
 }
+
+/**
+ * 审核评论
+ * @param ids ID集合
+ */
+export function reviewComment(ids: number[]) {
+  return yxRequest.post<IResult>({
+    url: '/admin/comments/review',
+    data: {
+      ids,
+      isReview: true
+    }
+  })
+}
+
+

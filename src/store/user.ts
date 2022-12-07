@@ -5,7 +5,8 @@ import { yxRequest } from '@/service'
 import showMsg from '@/utils/message/message'
 
 // type
-import type { IUserMenu, Iaccount, IResult, IMenuResult } from '@/views/login/types'
+import type { IUserMenu, Iaccount, IMenuResult } from '@/views/login/types'
+import type { IResult } from '@/types/common'
 interface IUserState {
   userMenus: IUserMenu[]
 }
