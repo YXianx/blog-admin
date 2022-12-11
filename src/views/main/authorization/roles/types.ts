@@ -1,10 +1,12 @@
 export interface IRoleItem {
-    createTime: "2022-12-05 21:32:10",
-    updateTime: "2022-12-05 21:32:10",
+    createTime: string,
+    updateTime: string,
     id: 1,
     roleName: "管理员",
     label: "Admin",
-    enable: false
+    enable: false,
+    resourceIds: number[],
+    menuIds: number[]
 }
 
 export interface Tree {

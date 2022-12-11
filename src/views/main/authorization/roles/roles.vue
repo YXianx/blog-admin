@@ -62,7 +62,7 @@
         </el-table-column>
         <el-table-column label="操作" width="250" align="center">
           <template #default="scope">
-            <el-button type="primary" icon="Menu" size="small" link>菜单权限</el-button>
+            <el-button type="primary" icon="Menu" size="small" link @click="setRoleClick(scope.row)">菜单权限</el-button>
             <el-button type="primary" icon="MessageBox" size="small" link>资源权限</el-button>
             <el-popconfirm title="是否删除所勾选的分类项?" @confirm="removeRowClick(scope.row)">
               <template #reference>
@@ -73,7 +73,7 @@
         </el-table-column>
       </el-table>
 
-      <el-dialog v-model="dialogVisible" width="30%" :title="mode === 'insert' ? '新增角色' : '修改角色'">
+      <el-dialog v-model="dialogVisible" width="30%" :title="mode === 'insert' ? '新增角色' : '编辑角色'" @close="cancelClick">
         <el-form :model="roleModel" ref="formRef" labelWidth="80px" style="padding: 0px 20px">
           <el-form-item label="角色名" prop="name">
             <el-input v-model="roleModel.name"></el-input>
@@ -89,13 +89,14 @@
               node-key="id"
               highlight-current
               :props="defaultProps"
+              :default-checked-keys="roleModel.menuIdList"
               @check-change="handleCheckNode"
             />
           </el-form-item>
         </el-form>
         <div class="control-btns">
           <el-button size="large" @click="cancelClick(formRef!)">取消</el-button>
-          <el-button type="primary" size="large" @click="saveClick">{{ mode === 'insert' ? '确定' : '修改' }}</el-button>
+          <el-button type="primary" size="large" @click="saveClick">{{ mode === 'insert' ? '确定' : '编辑' }}</el-button>
         </div>
       </el-dialog>
 
@@ -117,7 +118,7 @@
 import { ref, reactive } from 'vue'
 import type { IRoleItem, Tree, IRoleModel } from './types'
 import type { FormInstance } from 'element-plus'
-import { queryRoleList, queryTreeList, insertRole, deleteRole, updateStatus } from '@/service/common/authorization'
+import { queryRoleList, queryTreeList, insertRole, deleteRole, updateStatus, updateRole } from '@/service/common/authorization'
 import showMsg from '@/utils/message/message';
 
 const roleList = ref<IRoleItem[]>()
@@ -131,16 +132,16 @@ const totalData = ref(0)
 const selectionItems = ref<IRoleItem[]>()
 const treeRef = ref()
 const treeList = ref<Tree[]>()
+const currentRole = ref<IRoleItem>()
 const roleModel = reactive<IRoleModel>({
   name: '',
   label: '',
   menuIdList: []
 })
-// const rules: FormRules = {
-//   name: [
-//     { required: true, message: '请输入角色名', trigger: 'blur' }
-//   ]
-// }
+const defaultProps = {
+  children: 'children',
+  label: 'label',
+}
 
 /**
  * 条数改变回调
@@ -159,10 +160,18 @@ const handleCurrentChange = (page: number) => {
   refreshPage()
 }
 
+/**
+ * 勾选回调
+ * @param item 勾选项
+ */
 const handleSelectionChange = (item: IRoleItem[]) => {
   selectionItems.value = item
 }
 
+/**
+ * switch回调
+ * @param status 状态
+ */
 const handleSwitchChange = (status: any) => {
   return (roleItem: IRoleItem) => {
     updateStatus(roleItem.id, status)
@@ -199,6 +208,20 @@ const removeClick = () => {
       }
     })
 }
+
+const setRoleClick = (roleItem: IRoleItem) => {
+  mode.value = 'update'
+  currentRole.value = roleItem
+  roleModel.label = roleItem.label
+  roleModel.name = roleItem.roleName
+  roleModel.menuIdList = roleItem.menuIds
+  dialogVisible.value = true
+}
+
+/**
+ * 删除当前行
+ * @param roleItem 角色信息
+ */
 const removeRowClick = (roleItem: IRoleItem) => {
   deleteRole([roleItem.id])
     .then((result) => {
@@ -246,9 +269,9 @@ const cancelClick = (formEl: FormInstance) => {
   dialogVisible.value = false
 }
 /**
- * 确定
+ * 确定 & 编辑
  */
-const saveClick = async () => {
+const saveClick = async (roleItem: IRoleItem) => {
   if (!roleModel.name || !roleModel.label) {
     showMsg('warning', '请将信息填写完整')
     return
@@ -258,12 +281,22 @@ const saveClick = async () => {
     return
   }
 
-  const insertResult = await insertRole(roleModel.name, roleModel.label, roleModel.menuIdList)
-  if (insertResult.code === 2001) {
+  let requestResult = null
+  if (mode.value === 'insert') {
+    requestResult = await insertRole(roleModel.name, roleModel.label, roleModel.menuIdList)
+  } else {
+    if (currentRole.value)
+      requestResult = await updateRole(currentRole.value.id, roleModel.menuIdList, roleModel.name,roleModel.label)
+  }
+  if (requestResult!.code === 2001) {
     resetTree()
     refreshPage()
     dialogVisible.value = false
-    showMsg('success', '新增成功', 1500)
+    showMsg(
+      'success',
+      mode.value === 'insert' ? '新增成功' : '编辑成功',
+      1500
+    )
   }
 }
 
@@ -278,10 +311,10 @@ const refreshPage = (isShowMsg: boolean = false) => {
     })
 }
 
-const defaultProps = {
-  children: 'children',
-  label: 'label',
-}
+
+/**
+ * 页面初始化
+ */
 const init = () => {
   // 1、渲染页面数据
   refreshPage()

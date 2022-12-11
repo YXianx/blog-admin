@@ -70,3 +70,23 @@ export function updateStatus(id: number, status: boolean) {
         }
     })
 }
+
+/**
+ * 更新角色
+ * @param id 角色ID
+ * @param ids 菜单ID集合
+ * @param name 角色名
+ * @param label 权限标签
+ * @returns
+ */
+export function updateRole(id: number, ids: number[], name: string, label: string) {
+    return yxRequest.post<IResult>({
+        url: '/admin/roles/alloc/menu',
+        data: {
+            id,
+            ids,
+            name,
+            label
+        }
+    })
+}
