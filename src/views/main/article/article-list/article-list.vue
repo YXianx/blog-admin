@@ -11,6 +11,7 @@
             <el-col :span="5">
               <el-form-item prop="type">
                 <el-select style="width: 100%" placeholder="请选择文章类型" v-model="formModel.type">
+                  <el-option value="" label="默认">默认</el-option>
                   <template #prefix>
                     <el-icon><MessageBox /></el-icon>
                   </template>
@@ -26,6 +27,7 @@
                   <template #prefix>
                     <el-icon><Menu /></el-icon>
                   </template>
+                  <el-option value="" label="默认">默认</el-option>
                   <el-option v-for="option in selectOptions.category" :key="option" :value="option.id" :label="option.categoryName">
                     {{ option.categoryName }}
                   </el-option>
@@ -38,6 +40,7 @@
                   <template #prefix>
                     <el-icon><CollectionTag /></el-icon>
                   </template>
+                  <el-option value="" label="默认">默认</el-option>
                   <el-option v-for="option in selectOptions.tags" :value="option.id" :label="option.tagName">
                     {{ option.tagName }}
                   </el-option>
@@ -101,7 +104,7 @@
           <el-table-column prop="type" label="类型">
             <template #default="scope">
               <div class="table-type">
-                <el-tag type="danger">{{ scope.row.type }}</el-tag>
+                <el-tag :type="typeIdMapType(scope.row.type)!.type">{{ typeIdMapType(scope.row.type)!.name }}</el-tag>
               </div>
             </template>
           </el-table-column>
@@ -170,16 +173,15 @@ const tags: tagMenuType[] = [
   { tagName: '草稿箱', status: 3 },
   { tagName: '回收站', status: 4 },
 ]
-const currentIndex = ref(1)
 const articleList = ref<IArticleItem[]>([])
 const selectOptions = reactive<ISelectOption>({
   category: [],
   tags: []
 })
 const formModel = reactive({
-  type: 1,
-  categoryId: 1,
-  tagId: 1,
+  type: "",
+  categoryId: "",
+  tagId: "",
   keyword: ''
 })
 
@@ -195,18 +197,12 @@ const handleStatusChange = async (status: number) => {
 }
 
 const handleSizeChange = async (size: number) => {
-  const listPage = await queryArticleList(currentPage.value, size)
-  currentPage.value = listPage.data.current
-  pageSize.value = listPage.data.size
-  totalData.value = listPage.data.total
-  articleList.value = listPage.data.records
+  pageSize.value = size
+  refreshPage()
 }
 const handleCurrentChange = async (page: number) => {
-  const listPage = await queryArticleList(page, pageSize.value)
-  currentPage.value = listPage.data.current
-  pageSize.value = listPage.data.size
-  totalData.value = listPage.data.total
-  articleList.value = listPage.data.records
+  currentPage.value = page
+  refreshPage()
 }
 
 
@@ -221,6 +217,36 @@ const stringToArray = computed(() => {
     }
     if (typeof str === 'string')
     return str.split(split)
+  }
+})
+
+const typeIdMapType = computed(() => {
+  return (id: number) => {
+    switch(id) {
+      case 1:
+        return {
+          name: '原创',
+          type: 'danger'
+        }
+        break
+      case 2:
+        return {
+          name: '转载',
+          type: 'success'
+        }
+        break
+      case 3:
+        return {
+          name: '翻译',
+          type: 'warning'
+        }
+        break
+      default:
+        return {
+          name: '未知',
+          type: 'info'
+        }
+    }
   }
 })
 
@@ -282,22 +308,13 @@ const resetClick = (formEl: FormInstance | undefined) => {
  * 搜索
  */
 const submitClick = () => {
-  yxRequest.get({
-    url: '/admin/articles/listPage',
-    params: {
-      ...formModel,
-      current: 1,
-      size: 100
-    }
-  }).then((result) => {
-    articleList.value = result.data.records
-  })
+  refreshPage(true)
 }
 
 /**
  * 重置
  */
-const resetArticleList = (isShowMsg: boolean = false, msg: string = '重制成功') => {
+const resetArticleList = (isShowMsg: boolean = false, msg: string = '重置成功') => {
   setTimeout(() => {
     queryArticleList().then((result) => {
       articleList.value = result.data.records
@@ -308,9 +325,28 @@ const resetArticleList = (isShowMsg: boolean = false, msg: string = '重制成�
 }
 
 /**
+ * 重新渲染列表
+ */
+const refreshPage = (isShowMsg: boolean = false) => {
+  yxRequest.get({
+    url: '/admin/articles/listPage',
+    params: {
+      ...formModel,
+      current: currentPage.value,
+      size: pageSize.value
+    }
+  }).then((result) => {
+    articleList.value = result.data.records
+    currentPage.value = result.data.current
+    totalData.value = result.data.total
+    if (isShowMsg) showMsg('success', '查询成功')
+  })
+}
+
+/**
  * 页面初始化
  */
-const refreshPage = async () => {
+const init = async () => {
   // 1、请求分类下拉项
   const categoryResult = await yxRequest.get({
     url: '/admin/category/listPage',
@@ -338,7 +374,7 @@ const refreshPage = async () => {
   totalData.value = listPage.data.total
   articleList.value = listPage.data.records
 }
-refreshPage()
+init()
 </script>
 
 <style lang="less" scoped>
