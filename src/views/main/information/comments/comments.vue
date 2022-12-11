@@ -123,7 +123,7 @@ const commentList = ref<ICommentItem[]>()
  */
 const handleStatusChange = (isReview: number) => {
   reviewState.value = isReview
-  refreshPage(1, 100, isReview)
+  refreshPage(1, pageSize.value)
 }
 
 /**
@@ -160,8 +160,9 @@ const handleSizeChange = (size: number) => {
  * @param page 当前页
  */
 const handleCurrentChange = (page: number) => {
+
   currentPage.value = page
-  refreshPage(page, pageSize.value, reviewState.value)
+  refreshPage(page, pageSize.value)
 }
 /**
  * 勾选回调
@@ -182,6 +183,8 @@ const searchClick = () => {
     keyword: commentModel.nickName
   }).then((result) => {
     commentList.value = result.data.records
+    totalData.value = result.data.total
+    currentPage.value = result.data.current
     if (result.code === 2001) {
       showMsg('success', '查询成功')
     }
@@ -244,14 +247,18 @@ const approveClick = () => {
  * @param size 查询条数
  * @param isReview 是否审核通过
  */
-const refreshPage = (current: number = currentPage.value, size: number = pageSize.value, isReview: number | string = '') => {
+const refreshPage = (current: number = currentPage.value, size: number = pageSize.value, isReview: number | string = reviewState.value) => {
   queryCommentList({
     current,
     size,
-    isReview
+    isReview,
+    keyword: commentModel.nickName,
+    type: commentModel.type
   }).then((result) => {
     commentList.value = result.data.records
     totalData.value = result.data.total
+    currentPage.value = result.data.current
+    pageSize.value = result.data.size
   })
 }
 

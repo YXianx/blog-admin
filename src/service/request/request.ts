@@ -37,7 +37,7 @@ class YXRequest {
         return res.data
       },
       (err) => {
-        showMsg('error', '请求失败，请联系网站管理员')
+        showMsg('error', err.response.data.message)
         return err
       }
     )
