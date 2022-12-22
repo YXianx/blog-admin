@@ -21,10 +21,19 @@ export function queryRoleList(current: number = 1, size: number = 5, keyword?: s
 /**
  * 获取菜单树
  */
-export function queryTreeList() {
-    return yxRequest.get<IResult>({
-        url: '/admin/menus/treeList'
-    })
+export function queryMenuTree() {
+  return yxRequest.get<IResult>({
+      url: '/admin/menus/treeList'
+  })
+}
+
+/**
+ * 获取资源树
+ */
+export function queryResourceTree() {
+  return yxRequest.get<IResult>({
+    url: '/admin/resources/treeList'
+  })
 }
 
 /**
@@ -72,14 +81,14 @@ export function updateStatus(id: number, status: boolean) {
 }
 
 /**
- * 更新角色
+ * 更新角色菜单树
  * @param id 角色ID
  * @param ids 菜单ID集合
  * @param name 角色名
  * @param label 权限标签
  * @returns
  */
-export function updateRole(id: number, ids: number[], name: string, label: string) {
+export function updateMenu(id: number, ids: number[], name: string, label: string) {
     return yxRequest.post<IResult>({
         url: '/admin/roles/alloc/menu',
         data: {
@@ -89,4 +98,24 @@ export function updateRole(id: number, ids: number[], name: string, label: strin
             label
         }
     })
+}
+
+/**
+ * 更新角色资源树
+ * @param id 角色ID
+ * @param ids 菜单ID集合
+ * @param name 角色名
+ * @param label 权限标签
+ * @returns
+ */
+export function updateResource(id: number, ids: number[], name: string, label: string) {
+  return yxRequest.post<IResult>({
+    url: '/admin/roles/alloc/resource',
+    data: {
+      id,
+      ids,
+      name,
+      label
+    }
+  })
 }

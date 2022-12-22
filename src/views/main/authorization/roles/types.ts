@@ -21,3 +21,5 @@ export interface IRoleModel {
     menuIdList: number[],
     resourceIdList: number[]
 }
+
+export type TreeModel = 'menu' | 'resource'

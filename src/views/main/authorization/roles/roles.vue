@@ -62,8 +62,8 @@
         </el-table-column>
         <el-table-column label="操作" width="250" align="center">
           <template #default="scope">
-            <el-button type="primary" icon="Menu" size="small" link @click="setRoleClick(scope.row)">菜单权限</el-button>
-            <el-button type="primary" icon="MessageBox" size="small" link>资源权限</el-button>
+            <el-button type="primary" icon="Menu" size="small" link @click="openMenuModel(scope.row)">菜单权限</el-button>
+            <el-button type="primary" icon="MessageBox" size="small" link @click="openResourceModel(scope.row)">资源权限</el-button>
             <el-popconfirm title="是否删除所勾选的分类项?" @confirm="removeRowClick(scope.row)">
               <template #reference>
                 <el-button type="danger" icon="DeleteFilled" size="small" link>删除</el-button>
@@ -73,7 +73,8 @@
         </el-table-column>
       </el-table>
 
-      <el-dialog v-model="dialogVisible" width="30%" :title="mode === 'insert' ? '新增角色' : '编辑角色'" @close="cancelClick">
+      <!-- 菜单权限对话框 -->
+      <el-dialog v-model="menuVisible" width="30%" :title="mode === 'insert' ? '新增角色' : '编辑角色'" @close="cancelMenuClick(formRef!)">
         <el-form :model="roleModel" ref="formRef" labelWidth="80px" style="padding: 0px 20px">
           <el-form-item label="角色名" prop="name">
             <el-input v-model="roleModel.name"></el-input>
@@ -83,20 +84,48 @@
           </el-form-item>
           <el-form-item label="菜单权限">
             <el-tree
-              ref="treeRef"
-              :data="treeList"
+              ref="menuTreeRef"
+              :data="menuTree"
               show-checkbox
               node-key="id"
               highlight-current
               :props="defaultProps"
               :default-checked-keys="roleModel.menuIdList"
-              @check-change="handleCheckNode"
+              @check-change="handleCheckNode('menu')"
             />
           </el-form-item>
         </el-form>
         <div class="control-btns">
-          <el-button size="large" @click="cancelClick(formRef!)">取消</el-button>
-          <el-button type="primary" size="large" @click="saveClick">{{ mode === 'insert' ? '确定' : '编辑' }}</el-button>
+          <el-button size="large" @click="cancelMenuClick(formRef!)">取消</el-button>
+          <el-button type="primary" size="large" @click="menuSave">{{ mode === 'insert' ? '确定' : '编辑' }}</el-button>
+        </div>
+      </el-dialog>
+
+      <!-- 资源权限对话框 -->
+      <el-dialog v-model="resourceVisible" width="30%" title="修改资源权限" @close="cancelResourceClick(formRef!)">
+        <el-form :model="roleModel" ref="formRef" labelWidth="80px" style="padding: 0px 20px">
+          <el-form-item label="角色名" prop="name">
+            <el-input v-model="roleModel.name"></el-input>
+          </el-form-item>
+          <el-form-item label="权限标签" prop="label">
+            <el-input v-model="roleModel.label"></el-input>
+          </el-form-item>
+          <el-form-item label="资源权限">
+            <el-tree
+              ref="resourceTreeRef"
+              :data="resourceTree"
+              show-checkbox
+              node-key="id"
+              highlight-current
+              :props="defaultProps"
+              :default-checked-keys="roleModel.resourceIdList"
+              @check-change="handleCheckNode('resource')"
+            />
+          </el-form-item>
+        </el-form>
+        <div class="control-btns">
+          <el-button size="large" @click="cancelResourceClick(formRef!)">取消</el-button>
+          <el-button type="primary" size="large" @click="resourceSave">确定</el-button>
         </div>
       </el-dialog>
 
@@ -116,22 +145,35 @@
 
 <script setup lang="ts">
 import { ref, reactive, nextTick } from 'vue'
-import type { IRoleItem, Tree, IRoleModel } from './types'
+import type { IRoleItem, Tree, IRoleModel, TreeModel } from './types'
 import type { FormInstance } from 'element-plus'
-import { queryRoleList, queryTreeList, insertRole, deleteRole, updateStatus, updateRole } from '@/service/common/authorization'
+import {
+  queryRoleList,
+  queryMenuTree,
+  queryResourceTree,
+  insertRole,
+  deleteRole,
+  updateStatus,
+  updateMenu,
+  updateResource
+} from '@/service/common/authorization'
 import showMsg from '@/utils/message/message';
+import { result } from 'lodash';
 
 const roleList = ref<IRoleItem[]>()
 const mode = ref('insert')
-const dialogVisible = ref(false)
+const menuVisible = ref(false)
+const resourceVisible = ref(false)
 const formRef = ref<FormInstance>()
 const searchName = ref("")
 const currentPage = ref(1)
 const pageSize = ref(10)
 const totalData = ref(0)
 const selectionItems = ref<IRoleItem[]>()
-const treeRef = ref()
-const treeList = ref<Tree[]>()
+const menuTreeRef = ref()
+const resourceTreeRef = ref()
+const menuTree = ref<Tree[]>()
+const resourceTree = ref<Tree[]>()
 const currentRole = ref<IRoleItem>()
 const roleModel = reactive<IRoleModel>({
   name: '',
@@ -188,7 +230,7 @@ const handleSwitchChange = (status: any) => {
  * 新增
  */
 const insertClick = () => {
-  dialogVisible.value = true
+  menuVisible.value = true
 }
 
 /**
@@ -214,15 +256,30 @@ const removeClick = () => {
  * 打开菜单权限对话框
  * @param roleItem 当前角色
  */
-const setRoleClick = (roleItem: IRoleItem) => {
+const openMenuModel = (roleItem: IRoleItem) => {
   mode.value = 'update'
-  dialogVisible.value = true
+  menuVisible.value = true
 
   nextTick(() => {  // 将赋值操作放在对话框DOM加载完毕过后，解决resetFields重置不为空的问题
     currentRole.value = roleItem
     roleModel.label = roleItem.label
     roleModel.name = roleItem.roleName
     roleModel.menuIdList = roleItem.menuIds
+  })
+}
+
+/**
+ * 打开菜单权限对话框
+ * @param roleItem 当前角色
+ */
+ const openResourceModel = (roleItem: IRoleItem) => {
+  resourceVisible.value = true
+
+  nextTick(() => {  // 将赋值操作放在对话框DOM加载完毕过后，解决resetFields重置不为空的问题
+    currentRole.value = roleItem
+    roleModel.label = roleItem.label
+    roleModel.name = roleItem.roleName
+    roleModel.resourceIdList = roleItem.resourceIds
   })
 }
 
@@ -249,40 +306,63 @@ const searchClick = () => {
 
 /**
  * 菜单树节点勾选
+ * @param tree 树节点
  */
-const handleCheckNode = () => {
-  const ids = treeRef.value.getCheckedNodes().map((item: any) => {
+const handleCheckNode = (tree: TreeModel) => {
+  let treeRef = tree === 'menu' ? menuTreeRef.value : resourceTreeRef.value
+  const ids = treeRef.getCheckedNodes().map((item: any) => {
     return item.id
   })
-  roleModel.menuIdList = ids
+  if (tree === 'menu')
+    roleModel.menuIdList = ids
+  else
+    roleModel.resourceIdList = ids
 }
 
-const resetTree = () => {
-  for (const id of roleModel.menuIdList) {
-    treeRef.value.setChecked(id, false, false)
+/**
+ * 重置树的勾选
+ * @param tree 树类型
+ */
+const resetTree = (tree: TreeModel) => {
+  if (tree === 'menu') {
+    for (const id of roleModel.menuIdList) {
+      menuTreeRef.value.setChecked(id, false, false)
+    }
+  } else {
+    for (const id of roleModel.resourceIdList) {
+      resourceTreeRef.value.setChecked(id, false, false)
+    }
   }
 }
 
-//TODO:BUG roleModel表单数据重置有问题
 /**
  * 取消
  */
-const cancelClick = (formEl: FormInstance) => {
+const cancelMenuClick = (formEl: FormInstance) => {
   // 1、重置表单
   if(formEl) {
     formEl.resetFields()
-    console.log("roleModel", roleModel);
-
   }
   // 2、重置菜单树
-  resetTree()
+  resetTree('menu')
   // 3、关闭dialog
-  dialogVisible.value = false
+  menuVisible.value = false
 }
+const cancelResourceClick = (formEl: FormInstance) => {
+  // 1、重置表单
+  if(formEl) {
+    formEl.resetFields()
+  }
+  // 2、重置菜单树
+  resetTree('resource')
+  // 3、关闭dialog
+  resourceVisible.value = false
+}
+
 /**
- * 确定 & 编辑
+ * 添加角色、编辑角色菜单权限
  */
-const saveClick = async (roleItem: IRoleItem) => {
+const menuSave = async (roleItem: IRoleItem) => {
   if (!roleModel.name || !roleModel.label) {
     showMsg('warning', '请将信息填写完整')
     return
@@ -297,17 +377,36 @@ const saveClick = async (roleItem: IRoleItem) => {
     requestResult = await insertRole(roleModel.name, roleModel.label, roleModel.menuIdList)
   } else {
     if (currentRole.value)
-      requestResult = await updateRole(currentRole.value.id, roleModel.menuIdList, roleModel.name,roleModel.label)
+      requestResult = await updateMenu(currentRole.value.id, roleModel.menuIdList, roleModel.name,roleModel.label)
   }
   if (requestResult!.code === 2001) {
-    resetTree()
+    menuVisible.value = false
+    resetTree('menu')
     refreshPage()
-    dialogVisible.value = false
     showMsg(
       'success',
       mode.value === 'insert' ? '新增成功' : '编辑成功',
       1500
     )
+  }
+}
+
+/**
+ * 编辑资源权限
+ */
+const resourceSave = async (roleItem: IRoleItem) => {
+  if (!roleModel.name || !roleModel.label) {
+    showMsg('warning', '请将信息填写完整')
+    return
+  }
+  if (currentRole.value) {
+    const resResult = await updateResource(currentRole.value.id, roleModel.resourceIdList, roleModel.name, roleModel.label)
+    if (resResult.code === 2001) {
+      resourceVisible.value = false
+      resetTree('resource')
+      refreshPage()
+      showMsg('success', '修改成功')
+    }
   }
 }
 
@@ -329,8 +428,8 @@ const refreshPage = (isShowMsg: boolean = false) => {
 const init = () => {
   // 1、渲染页面数据
   refreshPage()
-  // 2、提前请求角色菜单树
-  queryTreeList()
+  // 2、请求菜单树
+  queryMenuTree()
     .then((result) => {
       let tempTree: Tree[] = []
       // 2-1、格式转换成Tree
@@ -352,7 +451,32 @@ const init = () => {
         }
         tempTree.push(parent)
       }
-      treeList.value = tempTree
+      menuTree.value = tempTree
+    })
+  // 3、请求资源树
+  queryResourceTree()
+    .then((result) => {
+      let tempTree: Tree[] = []
+      // 2-1、格式转换成Tree
+      for(const res of result.data) {
+        const parent: Tree = {
+          id: res.id,
+          label: res.resourceName,
+          children: []
+        }
+        if (res.children) {
+          for (const children of res.children) {
+            const node: Tree = {
+              id: children.id,
+              label: children.resourceName,
+              children: []
+            }
+            parent.children?.push(node)
+          }
+        }
+        tempTree.push(parent)
+      }
+      resourceTree.value = tempTree
     })
 }
 
