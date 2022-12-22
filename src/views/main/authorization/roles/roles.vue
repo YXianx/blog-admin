@@ -115,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, nextTick } from 'vue'
 import type { IRoleItem, Tree, IRoleModel } from './types'
 import type { FormInstance } from 'element-plus'
 import { queryRoleList, queryTreeList, insertRole, deleteRole, updateStatus, updateRole } from '@/service/common/authorization'
@@ -136,7 +136,8 @@ const currentRole = ref<IRoleItem>()
 const roleModel = reactive<IRoleModel>({
   name: '',
   label: '',
-  menuIdList: []
+  menuIdList: [],
+  resourceIdList: []
 })
 const defaultProps = {
   children: 'children',
@@ -209,13 +210,20 @@ const removeClick = () => {
     })
 }
 
+/**
+ * 打开菜单权限对话框
+ * @param roleItem 当前角色
+ */
 const setRoleClick = (roleItem: IRoleItem) => {
   mode.value = 'update'
-  currentRole.value = roleItem
-  roleModel.label = roleItem.label
-  roleModel.name = roleItem.roleName
-  roleModel.menuIdList = roleItem.menuIds
   dialogVisible.value = true
+
+  nextTick(() => {  // 将赋值操作放在对话框DOM加载完毕过后，解决resetFields重置不为空的问题
+    currentRole.value = roleItem
+    roleModel.label = roleItem.label
+    roleModel.name = roleItem.roleName
+    roleModel.menuIdList = roleItem.menuIds
+  })
 }
 
 /**
@@ -255,6 +263,7 @@ const resetTree = () => {
   }
 }
 
+//TODO:BUG roleModel表单数据重置有问题
 /**
  * 取消
  */
@@ -262,6 +271,8 @@ const cancelClick = (formEl: FormInstance) => {
   // 1、重置表单
   if(formEl) {
     formEl.resetFields()
+    console.log("roleModel", roleModel);
+
   }
   // 2、重置菜单树
   resetTree()

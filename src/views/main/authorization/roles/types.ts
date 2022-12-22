@@ -18,5 +18,6 @@ export interface Tree {
 export interface IRoleModel {
     name: string,
     label: string,
-    menuIdList: number[]
+    menuIdList: number[],
+    resourceIdList: number[]
 }
