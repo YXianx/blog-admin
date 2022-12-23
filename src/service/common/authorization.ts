@@ -156,3 +156,33 @@ export function insertResourceModule(parentId: number, url: string, requestMetho
     }
   })
 }
+
+/**
+ * 修改资源
+ * @param id 资源ID
+ * @param name 资源名称
+ * @param requestMethod 请求方式
+ * @param url 请求地址
+ */
+export function updateResourceModel(id: number, name: string, requestMethod: string, url: string) {
+  return yxRequest.post<IResult>({
+    url: '/admin/resources/update',
+    data: {
+      id,
+      name,
+      requestMethod,
+      url
+    }
+  })
+}
+
+/**
+ * 删除资源
+ * @param id 资源ID
+ */
+export function deleteResourceModel(id: number) {
+  return yxRequest.delete<IResult>({
+    url: '/admin/resources/delete',
+    data: id
+  })
+}

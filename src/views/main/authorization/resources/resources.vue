@@ -45,9 +45,13 @@
       </el-table-column>
       <el-table-column label="操作" align="center">
         <template #default="scope">
-          <el-button type="primary" icon="Plus" size="small" link @click="resourceClick(scope.row)">新增</el-button>
-          <el-button type="primary" icon="EditPen" size="small" link>修改</el-button>
-          <el-button type="danger" icon="DeleteFilled" size="small" link>删除</el-button>
+          <el-button v-if="scope.row.children.length > 0" type="primary" icon="Plus" size="small" link @click="resourceClick(scope.row)">新增</el-button>
+          <el-button type="primary" icon="EditPen" size="small" link @click="editResourceModel(scope.row)">修改</el-button>
+          <el-popconfirm title="是否删除所勾选的分类项?" @confirm="clearResourceModel(scope.row.id)">
+            <template #reference>
+              <el-button type="danger" icon="DeleteFilled" size="small" link>删除</el-button>
+            </template>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -103,12 +107,22 @@
 </template>
 
 <script setup lang="ts">
+// TODO:后端新增资源接口，资源路径、请求方式需要设置成可选(现必传)
+// TODO:根据url是否为空来判断当前模块还是子资源，判断新增按钮是否显示
+// TODO:后端删除接口有问题
+
 import { ref, computed, reactive } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
-import { queryResourceTree, updateAnonState, insertResourceModule } from '@/service/common/authorization'
 import type { ILeaf } from './types'
 import type { FormInstance } from 'element-plus'
 import showMsg from '@/utils/message/message';
+import {
+  queryResourceTree,
+  updateAnonState,
+  insertResourceModule,
+  updateResourceModel,
+  deleteResourceModel
+} from '@/service/common/authorization'
 
 const formRef = ref()
 const resourceTree = ref<ILeaf[]>()
@@ -116,8 +130,8 @@ const keyword = ref<string>()
 const moduleMode = ref('insert')
 const resourceMode = ref('insert')
 const moduleVisible = ref(false)
-const resourceVisible = ref(true)
-const curModudleId = ref<number>()
+const resourceVisible = ref(false)
+const curResource = ref<ILeaf>()
 const moduleName = ref('')
 const resourceModel = reactive({
   name: '',
@@ -158,15 +172,17 @@ const trimDateFormat = computed(() => {
  * 新增模块按钮
  */
 const addClick = () => {
+  moduleMode.value = 'insert'
   moduleVisible.value = true
 }
 
 /**
  * 新增资源按钮
  */
-const resourceClick = (module: ILeaf) => {
+const resourceClick = (resource: ILeaf) => {
+  resourceMode.value = 'insert'
   resourceVisible.value = true
-  curModudleId.value = module.id // 存储当前选中模块ID
+  curResource.value = resource // 存储当前选中模块
 }
 
 /**
@@ -184,25 +200,46 @@ const resourceCancelClick = (formEl: FormInstance) => {
 }
 
 /**
- * 新增父模块 parentId: 0
+ * 新增父模块 or 修改 parentId: 0
  */
 const moduleSave = () => {
   if (!moduleName.value) {
     showMsg('warning', '未填写模块名')
     return
   }
+  if (moduleName.value === curResource.value?.resourceName) { // 判断模块名是否有变化
+    showMsg('warning', '模块名没有变化')
+    return
+  }
+
   let parentId = 0
-  let url = ''
-  let requestMethod = ''
+  let url = '/' // 临时
+  let requestMethod = 'GET' // 临时
   let name = moduleName.value
-  insertResourceModule(parentId, url, requestMethod, name)
-    .then((result) => {
+
+  if (moduleMode.value === 'insert') {
+    insertResourceModule(parentId, url, requestMethod, name)
+      .then((result) => {
+        if (result.code === 2001) {
+          showMsg('success', '新增成功')
+          refreshPage()
+          moduleCancelClick()
+        }
+      })
+  } else {
+    updateResourceModel(
+      curResource.value!?.id,
+      moduleName.value,
+      requestMethod,
+      url,
+    ).then((result) => {
       if (result.code === 2001) {
-        showMsg('success', '新增成功')
+        showMsg('success', '修改成功')
         refreshPage()
         moduleCancelClick()
       }
     })
+  }
 }
 
 /**
@@ -213,18 +250,70 @@ const resourceSave = () => {
     showMsg('warning', '信息未填写完整')
     return
   }
-  insertResourceModule(
-    curModudleId.value!,
-    resourceModel.url,
-    resourceModel.method,
-    resourceModel.name
-  ).then((result) => {
-    if (result.code === 2001) {
-      showMsg('success', '添加成功')
-      refreshPage()
-      resourceCancelClick(formRef.value)
-    }
-  })
+
+  if (resourceMode.value === 'insert') {
+    insertResourceModule(
+      curResource.value?.id!,
+      resourceModel.url,
+      resourceModel.method,
+      resourceModel.name
+    ).then((result) => {
+      if (result.code === 2001) {
+        showMsg('success', '添加成功')
+        refreshPage()
+        resourceCancelClick(formRef.value)
+      }
+    })
+  } else {
+    updateResourceModel(
+      curResource.value?.id!,
+      resourceModel.name,
+      resourceModel.method,
+      resourceModel.url
+    ).then((result) => {
+      if (result.code === 2001) {
+        showMsg('success', '修改成功')
+        refreshPage()
+        resourceCancelClick(formRef.value)
+      }
+    })
+  }
+}
+
+/**
+ * 修改模块和资源
+ * @param resource 当前行资源
+ */
+const editResourceModel = (resource: ILeaf) => {
+  curResource.value = resource
+  // 判断当前是选中模块还是子资源
+  if (resource.children.length > 0) {
+    moduleMode.value = 'update'
+    moduleName.value = resource.resourceName
+    moduleVisible.value = true
+  } else {
+    resourceMode.value = 'update'
+    resourceModel.method = resource.requestMethod
+    resourceModel.name = resource.resourceName
+    resourceModel.url = resource.url
+    resourceVisible.value = true
+  }
+}
+
+// TODO:删除请求后端报错
+/**
+ * 删除资源
+ * @param id 资源ID
+ */
+const clearResourceModel = (id: number) => {
+  deleteResourceModel(id)
+    .then((result) => {
+      if (result.code === 2001) {
+        showMsg('success', '删除成功')
+        refreshPage()
+        resourceCancelClick(formRef.value)
+      }
+    })
 }
 
 /**
