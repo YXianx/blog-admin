@@ -30,9 +30,12 @@ export function queryMenuTree() {
 /**
  * 获取资源树
  */
-export function queryResourceTree() {
-  return yxRequest.get<IResult>({
-    url: '/admin/resources/treeList'
+export function queryResourceTree<T = IResult>(keyword?: string) {
+  return yxRequest.get<T>({
+    url: '/admin/resources/treeList',
+    params: {
+      keyword
+    }
   })
 }
 
@@ -116,6 +119,40 @@ export function updateResource(id: number, ids: number[], name: string, label: s
       ids,
       name,
       label
+    }
+  })
+}
+
+/**
+ * 更新匿名访问状态
+ * @param id 资源项ID
+ * @param status 匿名状态
+ */
+export function updateAnonState(id: number, status: boolean) {
+  return yxRequest.post<IResult>({
+    url: '/admin/resources/update/status',
+    data: {
+      id,
+      status
+    }
+  })
+}
+
+/**
+ * 新增资源
+ * @param parentId 父模块ID
+ * @param url 请求路径
+ * @param requestMethod 请求类型
+ * @param name 模块名称
+ */
+export function insertResourceModule(parentId: number, url: string, requestMethod: string, name: string) {
+  return yxRequest.post<IResult>({
+    url: '/admin/resources/insert',
+    data: {
+      parentId,
+      url,
+      requestMethod,
+      name
     }
   })
 }
