@@ -44,13 +44,30 @@
     background-color: #409eff;
   }
 }
-.pagination-container {
+.pagination-container { // 页码
   margin: 20px 0;
   float: right;
 }
-.control-btns {
+.control-btns { // 对话框按钮
   display: flex;
   justify-content: flex-end;
+}
+.search-control { // 搜索栏目
+  display: flex;
+  justify-content: space-between;
+  margin: 24px 0px 20px 0px;
+  .left {
+    display: flex;
+    .el-select, .el-input {
+      margin-right: 10px;
+    }
+  }
+  .right {
+    display: flex;
+    button {
+      margin-left: 10px;
+    }
+  }
 }
 // common end
 

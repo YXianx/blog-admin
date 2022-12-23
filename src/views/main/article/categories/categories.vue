@@ -4,8 +4,8 @@
       <div class="card-title">
         分类管理
       </div>
-      <div class="tool-bar">
-        <div class="control">
+      <div class="search-control">
+        <div class="left">
           <el-button type="primary" :icon="Plus" @click="addClick">
             新增
           </el-button>
@@ -17,7 +17,7 @@
             </template>
           </el-popconfirm>
         </div>
-        <div class="search">
+        <div class="right">
           <el-input placeholder="请输入分类名" v-model="searchName">
             <template #prefix>
               <el-icon>

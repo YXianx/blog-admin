@@ -5,36 +5,26 @@
         角色管理
       </div>
       <div class="search-control">
-        <el-form @submit.native.prevent>
-          <el-row>
-            <el-col :span="18">
-              <el-button type="primary" icon="Plus" @click="insertClick">
-                新增
+        <div class="left">
+          <el-button type="primary" icon="Plus" @click="insertClick">
+            新增
+          </el-button>
+          <el-popconfirm title="是否删除所勾选的分类项?" @confirm="removeClick">
+            <template #reference>
+              <el-button type="danger" icon="DeleteFilled">
+                批量删除
               </el-button>
-              <el-popconfirm title="是否删除所勾选的分类项?" @confirm="removeClick">
-                <template #reference>
-                  <el-button type="danger" icon="DeleteFilled">
-                    批量删除
-                  </el-button>
-                </template>
-              </el-popconfirm>
-            </el-col>
-            <el-col :span="6">
-              <el-row :gutter="15">
-                <el-col :span="16">
-                  <el-input placeholder="请输入角色名" v-model="searchName" @keyup.enter.native="searchClick">
-                    <template #prefix>
-                      <el-icon><Search /></el-icon>
-                    </template>
-                  </el-input>
-                </el-col>
-                <el-col :span="8">
-                  <el-button type="primary" icon="Search" @click="searchClick">搜索</el-button>
-                </el-col>
-              </el-row>
-            </el-col>
-          </el-row>
-        </el-form>
+            </template>
+          </el-popconfirm>
+        </div>
+        <div class="right">
+          <el-input placeholder="请输入角色名" v-model="searchName" @keyup.enter.native="searchClick">
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+          <el-button type="primary" icon="Search" @click="searchClick">搜索</el-button>
+        </div>
       </div>
 
       <el-table :data="roleList" border @selection-change="handleSelectionChange">
@@ -158,7 +148,6 @@ import {
   updateResource
 } from '@/service/common/authorization'
 import showMsg from '@/utils/message/message';
-import { result } from 'lodash';
 
 const roleList = ref<IRoleItem[]>()
 const mode = ref('insert')
@@ -487,8 +476,5 @@ init()
   .roles {
     width: 100%;
     height: 100%;
-    .search-control {
-      margin: 24px 0px 20px 0px;
-    }
   }
 </style>

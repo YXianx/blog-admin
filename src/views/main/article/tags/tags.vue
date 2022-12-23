@@ -4,20 +4,20 @@
       <div class="card-title">
         标签管理
       </div>
-      <div class="tool-bar">
-        <div class="control">
+      <div class="search-control">
+        <div class="left">
           <el-button type="primary" :icon="Plus" @click="addClick">
             新增
           </el-button>
           <el-popconfirm title="是否删除所勾选的分类项?" @confirm="selectionRemoveClick">
-                <template #reference>
-                  <el-button type="danger" :icon="DeleteFilled">
-                    批量删除
-                  </el-button>
-                </template>
-              </el-popconfirm>
+            <template #reference>
+              <el-button type="danger" :icon="DeleteFilled">
+                批量删除
+              </el-button>
+            </template>
+          </el-popconfirm>
         </div>
-        <div class="search">
+        <div class="right">
           <el-input placeholder="请输入标签名" v-model="searchName">
             <template #prefix>
               <el-icon>

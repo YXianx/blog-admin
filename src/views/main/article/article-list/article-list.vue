@@ -6,6 +6,54 @@
       </div>
       <StatusMenu :tags="tags" @change-status="handleStatusChange" />
       <div class="search-control">
+        <div class="left">
+          <el-select style="width: 100%" placeholder="请选择文章类型" v-model="formModel.type">
+            <el-option value="" label="默认">默认</el-option>
+            <template #prefix>
+              <el-icon><MessageBox /></el-icon>
+            </template>
+            <el-option label="原创" :value="1">原创</el-option>
+            <el-option label="转载" :value="2">转载</el-option>
+            <el-option label="翻译" :value="3">翻译</el-option>
+          </el-select>
+
+          <el-select style="width: 100%" placeholder="请选择分类" v-model="formModel.categoryId">
+            <template #prefix>
+              <el-icon><Menu /></el-icon>
+            </template>
+            <el-option value="" label="默认">默认</el-option>
+            <el-option v-for="option in selectOptions.category" :key="option" :value="option.id" :label="option.categoryName">
+              {{ option.categoryName }}
+            </el-option>
+          </el-select>
+
+          <el-select style="width: 100%" placeholder="请选择标签" v-model="formModel.tagId">
+            <template #prefix>
+              <el-icon><CollectionTag /></el-icon>
+            </template>
+            <el-option value="" label="默认">默认</el-option>
+            <el-option v-for="option in selectOptions.tags" :value="option.id" :label="option.tagName">
+              {{ option.tagName }}
+            </el-option>
+          </el-select>
+
+          <el-input style="width: 100%" placeholder="输入文章名" v-model="formModel.keyword">
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
+        <div class="right">
+          <el-button type="default" :icon="Refresh" @click="resetClick(formRef)">
+            重置
+          </el-button>
+          <el-button type="primary" :icon="Search" @click="submitClick">
+            搜索
+          </el-button>
+        </div>
+      </div>
+
+      <!-- <div class="search-control">
         <el-form ref="formRef" :model="formModel">
           <el-row :gutter="15">
             <el-col :span="5">
@@ -66,7 +114,7 @@
             </el-col>
           </el-row>
         </el-form>
-      </div>
+      </div> -->
       <div class="article-table">
         <div class="article-control">
           <el-button type="primary" :icon="MostlyCloudy" plain>
