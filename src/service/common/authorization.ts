@@ -145,7 +145,7 @@ export function updateAnonState(id: number, status: boolean) {
  * @param requestMethod 请求类型
  * @param name 模块名称
  */
-export function insertResourceModule(parentId: number, url: string, requestMethod: string, name: string) {
+export function insertResourceModule(parentId: number, name: string, requestMethod?: string, url?: string) {
   return yxRequest.post<IResult>({
     url: '/admin/resources/insert',
     data: {
@@ -164,7 +164,7 @@ export function insertResourceModule(parentId: number, url: string, requestMetho
  * @param requestMethod 请求方式
  * @param url 请求地址
  */
-export function updateResourceModel(id: number, name: string, requestMethod: string, url: string) {
+export function updateResourceModel(id: number, name: string, requestMethod?: string, url?: string) {
   return yxRequest.post<IResult>({
     url: '/admin/resources/update',
     data: {
@@ -183,6 +183,9 @@ export function updateResourceModel(id: number, name: string, requestMethod: str
 export function deleteResourceModel(id: number) {
   return yxRequest.delete<IResult>({
     url: '/admin/resources/delete',
+    headers: { // 修改请求头，否则后端会报 Required request body is missing 没有主体的错误
+      "Content-Type": "application/json"
+    },
     data: id
   })
 }

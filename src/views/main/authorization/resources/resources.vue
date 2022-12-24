@@ -22,17 +22,20 @@
       :data="resourceTree"
       row-key="id"
       :tree-props="{children: 'children'}"
+      @cell-click="handleTableCellClick"
     >
       <el-table-column label="资源名" prop="resourceName"></el-table-column>
-      <el-table-column label="资源路径" prop="url" align="center"></el-table-column>
+      <el-table-column label="资源路径" prop="url" width="230" align="center"></el-table-column>
       <el-table-column label="请求方式" prop="requestMethod" align="center">
         <template #default="scope">
-          <el-tag :type="methodMapType(scope.row.requestMethod)" size="large">{{ scope.row.requestMethod }}</el-tag>
+          <el-tag v-if="scope.row.url !== null" :type="methodMapType(scope.row.requestMethod)" size="large">{{ scope.row.requestMethod }}</el-tag>
+          <div v-else style="height: 35px;"></div>
         </template>
       </el-table-column>
       <el-table-column label="匿名访问" prop="anon" align="center">
         <template #default="scope">
-          <el-switch v-model="scope.row.anon" @change="handleSwitchChange($event)(scope.row.id)"></el-switch>
+          <el-switch v-if="scope.row.url !== null" v-model="scope.row.anon" @change="handleSwitchChange($event)(scope.row.id)"></el-switch>
+          <div v-else style="height: 35px;"></div>
         </template>
       </el-table-column>
       <el-table-column label="创建时间" prop="createTime" align="center">
@@ -43,9 +46,9 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center">
+      <el-table-column label="操作" prop="setting" width="190" align="center">
         <template #default="scope">
-          <el-button v-if="scope.row.children.length > 0" type="primary" icon="Plus" size="small" link @click="resourceClick(scope.row)">新增</el-button>
+          <el-button v-if="scope.row.url === null" type="primary" icon="Plus" size="small" link @click="resourceClick(scope.row)">新增</el-button>
           <el-button type="primary" icon="EditPen" size="small" link @click="editResourceModel(scope.row)">修改</el-button>
           <el-popconfirm title="是否删除所勾选的分类项?" @confirm="clearResourceModel(scope.row.id)">
             <template #reference>
@@ -111,7 +114,7 @@
 // TODO:根据url是否为空来判断当前模块还是子资源，判断新增按钮是否显示
 // TODO:后端删除接口有问题
 
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted, nextTick } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
 import type { ILeaf } from './types'
 import type { FormInstance } from 'element-plus'
@@ -132,6 +135,7 @@ const resourceMode = ref('insert')
 const moduleVisible = ref(false)
 const resourceVisible = ref(false)
 const curResource = ref<ILeaf>()
+const expandIconEls = ref<HTMLElement[]>()
 const moduleName = ref('')
 const resourceModel = reactive({
   name: '',
@@ -167,6 +171,21 @@ const trimDateFormat = computed(() => {
       return '未知'
   }
 })
+
+/**
+ * 表格行点击回调
+ * @param row 当前行数据
+ * @param column 列名数据
+ * @param event 其他事件
+ */
+const handleTableCellClick = (row: ILeaf, column: any, event: any) => {
+  if (column.property === 'setting') return
+  // 首次点击获取所有展开按钮Dom
+  if (!expandIconEls.value)
+    expandIconEls.value = (document.querySelectorAll('.el-table__expand-icon') as unknown) as HTMLElement[]
+  const rowNum = resourceTree.value?.indexOf(row) as number // 行号
+  expandIconEls.value[rowNum].click() // 点击当前行的展开按钮
+}
 
 /**
  * 新增模块按钮
@@ -213,12 +232,10 @@ const moduleSave = () => {
   }
 
   let parentId = 0
-  let url = '/' // 临时
-  let requestMethod = 'GET' // 临时
   let name = moduleName.value
 
   if (moduleMode.value === 'insert') {
-    insertResourceModule(parentId, url, requestMethod, name)
+    insertResourceModule(parentId, name)
       .then((result) => {
         if (result.code === 2001) {
           showMsg('success', '新增成功')
@@ -229,9 +246,7 @@ const moduleSave = () => {
   } else {
     updateResourceModel(
       curResource.value!?.id,
-      moduleName.value,
-      requestMethod,
-      url,
+      moduleName.value
     ).then((result) => {
       if (result.code === 2001) {
         showMsg('success', '修改成功')
@@ -254,9 +269,9 @@ const resourceSave = () => {
   if (resourceMode.value === 'insert') {
     insertResourceModule(
       curResource.value?.id!,
-      resourceModel.url,
+      resourceModel.name,
       resourceModel.method,
-      resourceModel.name
+      resourceModel.url
     ).then((result) => {
       if (result.code === 2001) {
         showMsg('success', '添加成功')
@@ -287,7 +302,7 @@ const resourceSave = () => {
 const editResourceModel = (resource: ILeaf) => {
   curResource.value = resource
   // 判断当前是选中模块还是子资源
-  if (resource.children.length > 0) {
+  if (resource.url === null) {
     moduleMode.value = 'update'
     moduleName.value = resource.resourceName
     moduleVisible.value = true
