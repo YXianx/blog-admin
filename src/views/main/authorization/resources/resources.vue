@@ -110,11 +110,7 @@
 </template>
 
 <script setup lang="ts">
-// TODO:后端新增资源接口，资源路径、请求方式需要设置成可选(现必传)
-// TODO:根据url是否为空来判断当前模块还是子资源，判断新增按钮是否显示
-// TODO:后端删除接口有问题
-
-import { ref, computed, reactive, onMounted, nextTick } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
 import type { ILeaf } from './types'
 import type { FormInstance } from 'element-plus'
