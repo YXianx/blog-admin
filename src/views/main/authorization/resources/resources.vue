@@ -112,7 +112,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { Plus, Search } from '@element-plus/icons-vue'
-import type { ILeaf } from './types'
+import type { IResourceLeaf } from './types'
 import type { FormInstance } from 'element-plus'
 import showMsg from '@/utils/message/message';
 import {
@@ -124,13 +124,13 @@ import {
 } from '@/service/common/authorization'
 
 const formRef = ref()
-const resourceTree = ref<ILeaf[]>()
+const resourceTree = ref<IResourceLeaf[]>()
 const keyword = ref<string>()
 const moduleMode = ref('insert')
 const resourceMode = ref('insert')
 const moduleVisible = ref(false)
 const resourceVisible = ref(false)
-const curResource = ref<ILeaf>()
+const curResource = ref<IResourceLeaf>()
 const expandIconEls = ref<HTMLElement[]>()
 const moduleName = ref('')
 const resourceModel = reactive({
@@ -174,12 +174,15 @@ const trimDateFormat = computed(() => {
  * @param column 列名数据
  * @param event 其他事件
  */
-const handleTableCellClick = (row: ILeaf, column: any, event: any) => {
+const handleTableCellClick = (row: IResourceLeaf, column: any, event: any) => {
   if (column.property === 'setting') return
   // 首次点击获取所有展开按钮Dom
   if (!expandIconEls.value)
     expandIconEls.value = (document.querySelectorAll('.el-table__expand-icon') as unknown) as HTMLElement[]
-  const rowNum = resourceTree.value?.indexOf(row) as number // 行号
+  const rowNum = resourceTree.value?.filter((item: IResourceLeaf) => {
+    if (item.children.length > 0)
+      return item
+  }).indexOf(row) as number
   expandIconEls.value[rowNum].click() // 点击当前行的展开按钮
 }
 
@@ -194,7 +197,7 @@ const addClick = () => {
 /**
  * 新增资源按钮
  */
-const resourceClick = (resource: ILeaf) => {
+const resourceClick = (resource: IResourceLeaf) => {
   resourceMode.value = 'insert'
   resourceVisible.value = true
   curResource.value = resource // 存储当前选中模块
@@ -295,7 +298,7 @@ const resourceSave = () => {
  * 修改模块和资源
  * @param resource 当前行资源
  */
-const editResourceModel = (resource: ILeaf) => {
+const editResourceModel = (resource: IResourceLeaf) => {
   curResource.value = resource
   // 判断当前是选中模块还是子资源
   if (resource.url === null) {
