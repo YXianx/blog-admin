@@ -1,5 +1,6 @@
 import { yxRequest } from "..";
 import type { IResult } from '@/types/common'
+import type { IMenuModel } from '@/views/main/authorization/menus/types'
 
 /**
  * 角色列表
@@ -21,9 +22,12 @@ export function queryRoleList(current: number = 1, size: number = 5, keyword?: s
 /**
  * 获取菜单树
  */
-export function queryMenuTree() {
+export function queryMenuTree(keyword?: string) {
   return yxRequest.get<IResult>({
-      url: '/admin/menus/treeList'
+      url: '/admin/menus/treeList',
+      params: {
+        keyword
+      }
   })
 }
 
@@ -185,6 +189,57 @@ export function deleteResourceModel(id: number) {
     url: '/admin/resources/delete',
     headers: { // 修改请求头，否则后端会报 Required request body is missing 没有主体的错误
       "Content-Type": "application/json"
+    },
+    data: id
+  })
+}
+
+/**
+ * 增加菜单
+ * @param menuModel 菜单信息
+ */
+export function insertMenus(menuModel: IMenuModel) {
+  return yxRequest.post<IResult>({
+    url: '/admin/menus/insert',
+    data: menuModel
+  })
+}
+
+/**
+ * 更新菜单
+ * @param menuModel 菜单信息
+ */
+export function updateMenus(menuModel: IMenuModel) {
+  return yxRequest.post<IResult>({
+    url: '/admin/menus/update',
+    data: menuModel
+  })
+}
+
+/**
+ * 更新隐藏状态
+ * @param id 菜单ID
+ * @param status 隐藏状态
+ */
+export function updateHiddenStatus(id: number, status: boolean) {
+  return yxRequest.post<IResult>({
+    url: '/admin/menus/update/status',
+    data: {
+      id,
+      status
+    }
+  })
+}
+
+/**
+ * 删除菜单
+ * @param id 菜单ID
+ */
+export function deleteMenus(id: number) {
+  return yxRequest.delete({
+    url: '/admin/menus/delete',
+    headers: {
+      'Content-Type': 'application/json'
     },
     data: id
   })

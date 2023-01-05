@@ -15,13 +15,23 @@ const routes: RouteRecordRaw[] = [
     name: 'main',
     path: '/main',
     component: () => import('@/views/main/main.vue'),
-    // TODO:之后换成动态路由
     children: [
       {
         name: 'sys',
         path: '/main/sys',
         component: () => import('@/views/main/sys/sys.vue')
       }
+      // ,
+      // {
+      //   name: 'menus',
+      //   path: '/main/menus',
+      //   component: () => import('@/views/main/authorization/menus/menus.vue')
+      // },
+      // {
+      //   name: 'roles',
+      //   path: '/main/roles',
+      //   component: () => import('@/views/main/authorization/roles/roles.vue')
+      // }
     ]
   }
 ]

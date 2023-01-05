@@ -134,6 +134,7 @@
 </template>
 
 <script setup lang="ts">
+// TODO:BUG:重新分配菜单权限后，禁用项自动取消禁用
 import { ref, reactive, nextTick } from 'vue'
 import type { IRoleItem, Tree, IRoleModel, TreeModel } from './types'
 import type { FormInstance } from 'element-plus'

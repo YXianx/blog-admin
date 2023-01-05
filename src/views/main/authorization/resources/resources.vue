@@ -25,7 +25,7 @@
       @cell-click="handleTableCellClick"
     >
       <el-table-column label="资源名" prop="resourceName"></el-table-column>
-      <el-table-column label="资源路径" prop="url" width="230" align="center"></el-table-column>
+      <el-table-column label="资源路径" prop="url" width="230"></el-table-column>
       <el-table-column label="请求方式" prop="requestMethod" align="center">
         <template #default="scope">
           <el-tag v-if="scope.row.url !== null" :type="methodMapType(scope.row.requestMethod)" size="large">{{ scope.row.requestMethod }}</el-tag>

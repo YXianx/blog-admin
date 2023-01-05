@@ -1,4 +1,4 @@
-export interface ILeaf {
+export interface IResourceLeaf {
   id: number;
   resourceName: string;
   url: string;
