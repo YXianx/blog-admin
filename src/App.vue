@@ -64,6 +64,9 @@
   }
   .right {
     display: flex;
+    .el-select {
+      margin: 0 10px !important;
+    }
     button {
       margin-left: 10px;
     }

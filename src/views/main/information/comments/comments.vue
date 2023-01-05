@@ -4,46 +4,34 @@
       <div class="card-title">评论管理</div>
       <StatusMenu :tags="tags" @change-status="handleStatusChange" />
       <div class="search-control">
-        <el-form>
-          <el-row>
-            <el-col :span="14">
-              <el-popconfirm title="是否删除所勾选的分类项?" @confirm="selectionRemoveClick">
-                <template #reference>
-                  <el-button type="danger" plain icon="DeleteFilled">
-                    批量删除
-                  </el-button>
-                </template>
-              </el-popconfirm>
-              <el-button type="success" icon="CircleCheck" plain @click="approveClick">
-                批量通过
+        <div class="left">
+          <el-popconfirm title="是否删除所勾选的分类项?" @confirm="selectionRemoveClick">
+            <template #reference>
+              <el-button type="danger" plain icon="DeleteFilled">
+                批量删除
               </el-button>
-            </el-col>
-            <el-col :span="10">
-              <el-row :gutter="15">
-                <el-col :span="10">
-                  <el-select placeholder="请选择来源" v-model="commentModel.type">
-                    <template #prefix>
-                      <el-icon><Compass /></el-icon>
-                    </template>
-                    <el-option label="默认" value="">默认</el-option>
-                    <el-option label="文章" :value="0">文章</el-option>
-                    <el-option label="友链" :value="1">友链</el-option>
-                  </el-select>
-                </el-col>
-                <el-col :span="10">
-                  <el-input placeholder="请输入用户昵称" v-model="commentModel.nickName">
-                    <template #prefix>
-                      <el-icon><Search /></el-icon>
-                    </template>
-                  </el-input>
-                </el-col>
-                <el-col :span="4">
-                  <el-button type="primary" icon="Search" @click="searchClick">搜索</el-button>
-                </el-col>
-              </el-row>
-            </el-col>
-          </el-row>
-        </el-form>
+            </template>
+          </el-popconfirm>
+          <el-button type="success" icon="CircleCheck" plain @click="approveClick">
+            批量通过
+          </el-button>
+        </div>
+        <div class="right">
+          <el-select placeholder="请选择来源" v-model="commentModel.type">
+            <template #prefix>
+              <el-icon><Compass /></el-icon>
+            </template>
+            <el-option label="默认" value="">默认</el-option>
+            <el-option label="文章" :value="0">文章</el-option>
+            <el-option label="友链" :value="1">友链</el-option>
+          </el-select>
+          <el-input placeholder="请输入用户昵称" v-model="commentModel.nickName">
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+          <el-button type="primary" icon="Search" @click="searchClick">搜索</el-button>
+        </div>
       </div>
       <el-table :data="commentList" border @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" ></el-table-column>
