@@ -122,6 +122,7 @@ import {
   updateResourceModel,
   deleteResourceModel
 } from '@/service/common/authorization'
+import { methodMapType } from '@/utils/global/method-map-type'
 
 const formRef = ref()
 const resourceTree = ref<IResourceLeaf[]>()
@@ -139,23 +140,6 @@ const resourceModel = reactive({
   method: ''
 })
 
-/**
- * 方法类型转为Tag Type类型
- */
-const methodMapType = computed(() => {
-  return (method: string) => {
-    switch (method) {
-      case 'GET':
-        return ''
-      case 'POST':
-        return 'warning'
-      case 'DELETE':
-        return 'danger'
-      case 'PUT':
-        return 'success'
-    }
-  }
-})
 /**
  * 日期格式化
  */
