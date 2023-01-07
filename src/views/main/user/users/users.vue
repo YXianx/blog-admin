@@ -93,11 +93,10 @@
 </template>
 
 <script setup lang="ts">
-// TODO:禁用操作后端暂未接口
 import { ref, reactive } from 'vue'
 import { FormInstance } from 'element-plus'
 import { Avatar, Search } from '@element-plus/icons-vue'
-import { queryUserList, updateUserData } from '@/service/common/user'
+import { queryUserList, updateUserData, updateUserStatus } from '@/service/common/user'
 import { queryRoleList } from '@/service/common/authorization'
 import type { IUserItem } from './types'
 import type { IRoleItem } from '@/views/main/authorization/roles/types'
@@ -187,9 +186,14 @@ const handleCurrentChange = (current: number) => {
  * 禁用按钮回调
  * @param status 禁用状态
  */
-const handleSwitchChange = (status: number) => {
+const handleSwitchChange = (status: boolean) => {
   return (id: number) => {
-    console.log(id, status);
+    updateUserStatus(id, status)
+      .then((result) => {
+        if (result.code === 2001) {
+          showMsg('success', status ? '禁用成功' : '解除成功')
+        }
+      })
   }
 }
 
