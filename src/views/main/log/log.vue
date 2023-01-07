@@ -98,7 +98,7 @@
           <el-row>
             <el-col :span="8">
               <el-form-item label="请求方式">
-                {{ detailModel.requestMethod }}
+                <el-tag :type="methodTextMapType(detailModel.requestMethod)" size="large">{{ detailModel.requestMethod }}</el-tag>
               </el-form-item>
             </el-col>
             <el-col :span="16">
@@ -125,7 +125,7 @@
             <div id="responseView">
             </div>
             <div style="background: #787878; color: #fff;">
-              {{ detailModel.responseData }}
+              <!-- {{ detailModel.responseData }} -->
             </div>
           </el-form-item>
         </div>
@@ -177,6 +177,7 @@ const reviewClick = (operation: IOperationDetail) => {
   detailModel.requestMethod = operation.requestMethod
   detailModel.requestParam = operation.requestParam
   detailModel.responseData = operation.responseData
+
 
   nextTick(() => {
     const responseViewEl = document.getElementById('responseView')
@@ -247,5 +248,19 @@ refreshPage()
 <style lang="less" scoped>
 .form {
   padding: 10px 20px;
+}
+#responseView {
+  // cursor: pointer;
+  // transition: all;
+  // transform: rotate();
+  // position: absolute;
+  // width: 100%;
+  // // height: 300px;
+  // padding: 20px;
+  // box-sizing: border-box;
+  // border: 2px solid #787878;
+  // border-radius: 6px;
+  // overflow:hidden;
+  // overflow-y: scroll;
 }
 </style>
