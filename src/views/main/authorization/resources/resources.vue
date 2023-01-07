@@ -50,7 +50,7 @@
         <template #default="scope">
           <el-button v-if="scope.row.url === null" type="primary" icon="Plus" size="small" link @click="resourceClick(scope.row)">新增</el-button>
           <el-button type="primary" icon="EditPen" size="small" link @click="editResourceModel(scope.row)">修改</el-button>
-          <el-popconfirm title="是否删除所勾选的分类项?" @confirm="clearResourceModel(scope.row.id)">
+          <el-popconfirm title="是否删除所选的资源模块?" @confirm="clearResourceModel(scope.row.id)">
             <template #reference>
               <el-button type="danger" icon="DeleteFilled" size="small" link>删除</el-button>
             </template>
