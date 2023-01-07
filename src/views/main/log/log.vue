@@ -6,9 +6,6 @@
 
     <div class="search-control">
       <div class="left">
-        <el-button type="danger" icon="DeleteFilled" disabled>
-          批量删除
-        </el-button>
       </div>
       <div class="right">
         <el-input placeholder="请输入模块名或描述" v-model="keyword">
@@ -23,14 +20,14 @@
     </div>
 
     <el-table :data="operationList">
-      <el-table-column type="selection" align="center"></el-table-column>
-      <el-table-column label="系统模块" prop="optModule" width="80" align="center"></el-table-column>
+      <!-- <el-table-column type="selection" align="center"></el-table-column> -->
+      <el-table-column label="系统模块" prop="optModule" width="120" align="center"></el-table-column>
       <el-table-column label="操作类型" prop="optType" width="80" align="center">
         <template #default="scope">
           <el-tag round size="large" :type="methodTextMapType(scope.row.optType)">{{ scope.row.optType }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作描述" prop="optDesc" width="150" align="center"></el-table-column>
+      <el-table-column label="操作描述" prop="optDesc" width="180" align="center"></el-table-column>
       <el-table-column label="请求方式" prop="requestMethod" align="center">
         <template #default="scope">
           <div style="margin: 5px 0;">
@@ -45,7 +42,7 @@
           {{ formatIpAdress(scope.row.ipSource) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作日期" prop="createTime" width="110" align="center">
+      <el-table-column label="操作日期" prop="createTime" width="180" align="center">
         <!-- <template #default="scope">
           <div style="display: flex; align-items: center; justify-content: center;">
             <el-icon style="margin: 0px 5px;"><Clock /></el-icon>
@@ -53,10 +50,14 @@
         </template> -->
         <!-- {{ scope.row.createTime }} -->
       </el-table-column>
-      <el-table-column label="操作" width="150" align="center">
+      <el-table-column label="操作" width="80" align="center">
         <template #default="scope">
           <el-button type="primary" icon="View" size="small" link @click="reviewClick(scope.row)">查看</el-button>
-          <el-button type="danger" icon="Delete" size="small" link>删除</el-button>
+          <!-- <el-popconfirm title="是否删除所选的日志?" @confirm="clearClick(scope.row.id)">
+            <template #reference>
+              <el-button type="danger" icon="Delete" size="small" link>删除</el-button>
+            </template>
+          </el-popconfirm> -->
         </template>
       </el-table-column>
     </el-table>
@@ -81,26 +82,51 @@
       </template>
       <el-form>
         <div class="form">
-          <el-form-item label="操作模块">
-            {{ detailModel?.optModule }}
-          </el-form-item>
-          <el-form-item label="请求地址">
-            {{ detailModel?.optUrl }}
-          </el-form-item>
-          <el-form-item label="请求方式">
-            {{ detailModel?.requestMethod }}
-          </el-form-item>
-          <el-form-item label="操作方法">
-            {{ detailModel?.optMethod }}
-          </el-form-item>
-          <el-form-item label="请求参数">
-            {{ detailModel?.requestParam }}
-          </el-form-item>
+          <el-row>
+            <el-col :span="8">
+              <el-form-item label="操作模块">
+              {{ detailModel.optModule }}
+              </el-form-item>
+            </el-col>
+            <el-col :span="16">
+              <el-form-item label="请求地址">
+                {{ detailModel.optUrl }}
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-row>
+            <el-col :span="8">
+              <el-form-item label="请求方式">
+                {{ detailModel.requestMethod }}
+              </el-form-item>
+            </el-col>
+            <el-col :span="16">
+              <el-form-item label="操作方法">
+                {{ detailModel.optMethod }}
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-row>
+            <el-col :span="8">
+              <el-form-item label="请求参数">
+                {{ detailModel.requestParam }}
+              </el-form-item>
+            </el-col>
+            <el-col :span="16">
+              <el-form-item label="操作人员">
+                {{ detailModel.nickname }}
+              </el-form-item>
+            </el-col>
+          </el-row>
+
           <el-form-item label="返回数据">
-            {{ detailModel?.responseData }}
-          </el-form-item>
-          <el-form-item label="操作人员">
-            {{ detailModel?.nickname }}
+            <div id="responseView">
+            </div>
+            <div style="background: #787878; color: #fff;">
+              {{ detailModel.responseData }}
+            </div>
           </el-form-item>
         </div>
       </el-form>
@@ -109,10 +135,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+// TODO:删除日志的功能暂无
+import { ref, reactive, nextTick } from 'vue'
 import { View } from '@element-plus/icons-vue'
 import { queryOperationList } from '@/service/common/log'
 import { methodMapType, methodTextMapType } from '@/utils/global/method-map-type'
+import useJsonToDom from '@/hook/useJsonToDom'
 import type { IOperationItem, IOperationDetail } from './types'
 
 const operationList = ref<IOperationItem[]>()
@@ -136,9 +164,11 @@ const searchClick = () => {
   refreshPage()
 }
 
+/**
+ * 查看
+ * @param operation 日志信息
+ */
 const reviewClick = (operation: IOperationDetail) => {
-  console.log(operation);
-
   detailVisible.value = true
   detailModel.nickname = operation.nickname
   detailModel.optMethod = operation.optMethod
@@ -147,7 +177,21 @@ const reviewClick = (operation: IOperationDetail) => {
   detailModel.requestMethod = operation.requestMethod
   detailModel.requestParam = operation.requestParam
   detailModel.responseData = operation.responseData
-  console.log(detailModel);
+
+  nextTick(() => {
+    const responseViewEl = document.getElementById('responseView')
+    console.log(responseViewEl);
+
+    useJsonToDom(detailModel.responseData, responseViewEl!)
+  })
+}
+
+/**
+ * 删除
+ * @param id 日志ID
+ */
+const clearClick = (id: number) => {
+
 }
 
 /**
