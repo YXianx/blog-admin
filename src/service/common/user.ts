@@ -38,3 +38,19 @@ export function updateUserData(id: number, nickName: string, roleIds: number[]) 
     }
   })
 }
+
+/**
+ * 用户状态切换
+ * @param id 用户ID
+ * @param status 禁用状态
+ * @returns
+ */
+export function  updateUserStatus(id: number, status: boolean) {
+  return yxRequest.post<IResult>({
+    url: '/admin/user/update/status',
+    data: {
+      id,
+      status
+    }
+  })
+}
