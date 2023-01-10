@@ -56,7 +56,6 @@ const recursion = (jsonObj: any, dom: HTMLElement, parentType?: string, isIndent
       createArrowEl(attrsEl, parentType)
 
       // 2-3-3、父级DOM插入上一级DOM中
-      debugger;
       attrsEl.style.paddingLeft = `${paddingLeft}px`
       paddingLeft = 10
       dom.appendChild(attrsEl)
@@ -77,9 +76,12 @@ const recursion = (jsonObj: any, dom: HTMLElement, parentType?: string, isIndent
   }
 
   // 当前为对象体或者数组时，结尾加上结束符
-  if ((parentType === '[object Object]' || parentType === '[object Array]')) {
+  // 当递归所有的后，返回到最顶层时(#responseView)不再渲染结束符
+  // 整理思路：发现不管是不是数组结束符都是 ‘}’ 然后推断判断条件有问题，一直不能为true
+  if ((parentType === '[object Object]' || parentType === '[object Array]') && dom.getAttribute('id') != 'responseView') {
     const endEl = document.createElement('div')
-    endEl.innerHTML = parentType === '[object Object]' ? '},' : '],'
+    endEl.innerHTML = (dom as HTMLElement).innerText.split(':')[1].split('\n')[0] === '[' ? '],' : '},' // 过滤当前父级DOM的text，拿到起始符号
+    console.log((dom as HTMLElement).innerText.split(':')[1].split('\n')[0]);
     dom.appendChild(endEl)
   }
 
