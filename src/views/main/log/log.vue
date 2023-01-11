@@ -90,7 +90,10 @@
             </el-col>
             <el-col :span="16">
               <el-form-item label="请求地址">
-                {{ detailModel.optUrl }}
+                <div class="reqAddress" title="点击复制请求地址" @click="handleCopyAddress">
+                  <span>{{ detailModel.optUrl }}</span>
+                  （点击复制）
+                </div>
               </el-form-item>
             </el-col>
           </el-row>
@@ -135,13 +138,13 @@
 </template>
 
 <script setup lang="ts">
-// TODO:删除日志的功能暂无
 import { ref, reactive, nextTick } from 'vue'
 import { View } from '@element-plus/icons-vue'
 import { queryOperationList } from '@/service/common/log'
 import { methodMapType, methodTextMapType } from '@/utils/global/method-map-type'
 import useJsonToDom from '@/hook/useJsonToDom'
 import type { IOperationItem, IOperationDetail } from './types'
+import showMsg from '@/utils/message/message'
 
 const operationList = ref<IOperationItem[]>()
 const currentPage = ref<number>(1)
@@ -214,6 +217,18 @@ const handleCurrentChange = (current: number) => {
 }
 
 /**
+ * 点击复制请求地址
+ */
+const handleCopyAddress = async () => {
+  const reqAddrEl = document.querySelector('.reqAddress span') as HTMLElement
+  const text = reqAddrEl.innerText
+  if (!text) return
+
+  await navigator.clipboard.writeText(reqAddrEl.innerText)
+  showMsg('success', '复制成功')
+}
+
+/**
  * 登录地址格式转换 (xxx|xxx|xx| 转为 xxxxx xx)
  * @param ipSource IP登录地址
  */
@@ -249,18 +264,14 @@ refreshPage()
 .form {
   padding: 10px 20px;
 }
-#responseView {
-  // cursor: pointer;
-  // transition: all;
-  // transform: rotate();
-  // position: absolute;
-  // width: 100%;
-  // // height: 300px;
-  // padding: 20px;
-  // box-sizing: border-box;
-  // border: 2px solid #787878;
-  // border-radius: 6px;
-  // overflow:hidden;
-  // overflow-y: scroll;
+.reqAddress {
+  span {
+    cursor: pointer;
+    border-bottom: 2px dashed #6A9AF2;
+    transition: all .2s;
+    &:hover {
+      color: #6A9AF2;
+    }
+  }
 }
 </style>

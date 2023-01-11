@@ -10,10 +10,15 @@ export default function (jsonStr: string, dom: HTMLElement) {
   recursion(jsonObj, dom)
 }
 
-// TODO:(优先解决)符号类型有问题;末尾元素不应该加逗号;
+// TODO:(优先解决)末尾元素不应该加逗号;
 const recursion = (jsonObj: any, dom: HTMLElement, parentType?: string, isIndent?: boolean) => {
+  const keyOrder = Object.keys(jsonObj)
+  const lastKey = keyOrder[keyOrder.length - 1]
+  let keyInLast = false
+
   // 遍历循环json体 or 数组体
   for (let attr in jsonObj) {
+    keyInLast = attr === lastKey
     // 1、获取当前属性的数据类型
     const attrType = Object.prototype.toString.call(jsonObj[attr])
     // 2、判断属性是数组、对象还是普通字段属性
@@ -23,7 +28,7 @@ const recursion = (jsonObj: any, dom: HTMLElement, parentType?: string, isIndent
         (attrType === '[object Array]' && jsonObj[attr].length <= 0) ||
         (attrType === '[object Object]' && jsonObj[attr] === '')) {
         const emptyEl = document.createElement('div')
-        emptyEl.innerHTML = `${attr}:${attrType === '[object Object]' ? '{}' : '[]'},`
+        emptyEl.innerHTML = `${attr}:${attrType === '[object Object]' ? '{}' : '[]'}${!keyInLast ? ',' : ''}`
         if (isIndent)
           emptyEl.style.paddingLeft = `${paddingLeft}px`
         dom.appendChild(emptyEl)
@@ -53,7 +58,7 @@ const recursion = (jsonObj: any, dom: HTMLElement, parentType?: string, isIndent
       attrsEl.style.position = 'relative'
 
       // 2-3-2、创建arrow小箭头在对象或数组旁边
-      createArrowEl(attrsEl, parentType)
+      createArrowEl(attrsEl, parentType, keyInLast)
 
       // 2-3-3、父级DOM插入上一级DOM中
       attrsEl.style.paddingLeft = `${paddingLeft}px`
@@ -67,7 +72,8 @@ const recursion = (jsonObj: any, dom: HTMLElement, parentType?: string, isIndent
     else {
       // 3-1、创建一级DOM或子级DOM
       const el = document.createElement('div')
-      el.innerHTML = `${attr}:${jsonObj[attr]},`
+      // 属性名：属性值 是否带有逗号（最后一个属性不需要加逗号）
+      el.innerHTML = `${attr}:${jsonObj[attr]}${!keyInLast ? ',' : ''}`
       if (isIndent)
         el.style.paddingLeft = '10px'
       // 3-2、插入页面容器中 或 父数组或父对象的El中
@@ -80,8 +86,8 @@ const recursion = (jsonObj: any, dom: HTMLElement, parentType?: string, isIndent
   // 整理思路：发现不管是不是数组结束符都是 ‘}’ 然后推断判断条件有问题，一直不能为true
   if ((parentType === '[object Object]' || parentType === '[object Array]') && dom.getAttribute('id') != 'responseView') {
     const endEl = document.createElement('div')
-    endEl.innerHTML = (dom as HTMLElement).innerText.split(':')[1].split('\n')[0] === '[' ? '],' : '},' // 过滤当前父级DOM的text，拿到起始符号
-    console.log((dom as HTMLElement).innerText.split(':')[1].split('\n')[0]);
+    // debugger;
+    endEl.innerHTML = `${(dom as HTMLElement).innerText.split(':')[1].split('\n')[0] === '[' ? ']' : '}'}${!keyInLast ? ',' : ''}` // 过滤当前父级DOM的text，拿到起始符号
     dom.appendChild(endEl)
   }
 
@@ -93,11 +99,13 @@ const recursion = (jsonObj: any, dom: HTMLElement, parentType?: string, isIndent
 
 /**
  * 创建Arrow箭头
- * @param parentEl DOM父对象
+ * @param parentEl 父级DOM
+ * @param parentType 父属性数据类型
+ * @param isLastKey 是否是最后一个属性
  * @returns arrow箭头DOM
  */
-const createArrowEl = (parentEl: HTMLElement, parentType: string) => {
-  let isExpand = true
+const createArrowEl = (parentEl: HTMLElement, parentType: string, isLastKey: boolean) => {
+  let isExpand = true // 展开标识
   const arrowEl = document.createElement('div')
   arrowEl.style.position = 'absolute'
   arrowEl.style.left = `-${15 - paddingLeft}px` // 计算图标left距离
@@ -119,14 +127,17 @@ const createArrowEl = (parentEl: HTMLElement, parentType: string) => {
         (childEls[i] as HTMLElement).style.display = 'block'
       }
       arrowEl.style.transform = 'rotate(180deg)';
-      (parentEl.children[0] as HTMLElement).innerHTML = (parentEl.children[0] as HTMLElement).innerText.split('...')[0]
+      (parentEl.children[0] as HTMLElement).innerHTML = (parentEl.children[0] as HTMLElement).innerText.split('...')[0] // 展开时只显示属性名
     } else {
-      for (let i = 2; i < childEls.length; i++) {
+      for (let i = 2; i < childEls.length; i++) { // 从2开始绕过arrow不处理
         (childEls[i] as HTMLElement).style.display = 'none'
       }
       arrowEl.style.transform = 'rotate(90deg)'
       nextTick(() => {
-        (parentEl.children[0] as HTMLElement).innerHTML = (parentEl.children[0] as HTMLElement).innerText + `...${parentType === '[object Object]' ? '},' : '],'}`
+        // 属性名：{...} or [...] 是否带有逗号（最后一个属性不需要加逗号）
+        (parentEl.children[0] as HTMLElement).innerHTML = `
+          ${(parentEl.children[0] as HTMLElement).innerText}...${parentType === '[object Object]' ? '}' : ']'}${!isLastKey ? ',' : ''}
+        `
       })
     }
   })
